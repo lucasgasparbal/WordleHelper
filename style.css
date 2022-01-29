@@ -3,10 +3,10 @@ body{
 }
 
 .wrap{
+    position:relative;
     display: flex;
     flex-direction: column;
-    width: auto;
-    margin-top: 10%;
+    align-self: center;
 }
 .gamebox{
     display: grid;
@@ -22,7 +22,7 @@ body{
 
 .row{
     width: auto;
-    height: 100%;
+
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     grid-gap: 5px;
@@ -31,10 +31,9 @@ body{
 }
 
 .tile{
-    height: 100%;
     width: 100%;
     display: grid;
-    grid-template-rows: 1fr 3fr;
+    grid-template-rows: 2fr 3fr;
     grid-gap: 3px;
     justify-content: center;
     align-items: center;
@@ -45,33 +44,43 @@ body{
 
 .tile-letter{
     width: 100%;
-    height: 100%;
+    min-width: 3.5rem;
+    min-height: 3.5rem;
+    max-width: 3.5rem;
+    max-height: 3.5rem;
+    display: inline-flex;
     font-family: Arial, Helvetica, sans-serif;
     text-align: center;
-    font-size: 3rem;
-    line-height: 3rem;
-    min-width: 3rem;
+    font-size: 2rem;
+    line-height: 2rem;
     font-weight: bold;
-    padding: 0.25rem;
     vertical-align: middle;
     box-sizing: border-box;
     border: 1px solid gray;
     user-select: none;
     justify-content: center;
     align-items: center;
-    padding: 0.2rem;
+    padding: 0.5rem;
+    color: white;
+    cursor:text;
+    overflow: hidden;
 }
 
 .color-button{
-    display: inline-flex;
     width: 100%;
     height: 100%;
+    min-width: 3.5rem;
+    max-width: 3.5rem;
     justify-content: center;
     align-items: center;
     font-weight: bold;
     box-sizing: border-box;
-    color: gray;
     user-select: none;
     border: 1px solid gray;
 
+}
+
+.color-button:hover{
+    border-color: white;
+    cursor:pointer;
 }
