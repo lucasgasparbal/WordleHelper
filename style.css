@@ -66,6 +66,10 @@ body{
     overflow: hidden;
 }
 
+.tile-letter[selected="true"]{
+    border-color: white;
+}
+
 .color-button{
     width: 100%;
     height: 100%;

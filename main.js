@@ -13074,17 +13074,14 @@ const presentLetterTest = new PresentLetter("e",
 2,
 0]);
 
-const tileDict = {}
-
-
 class Tile {
     constructor(colorButton,
  letter){
         this.colorButton = colorButton;
         this.letter = letter;
         this.states = ["#3a3a3c",
-"#b59f3b",
-"#538d4e"];
+        "#b59f3b",
+        "#538d4e"];
         this.state = -1;
         this.rotateColor();
 
@@ -13102,82 +13099,144 @@ class Tile {
     writeLetter = function(letter){
         this.letter.textContent = letter;
     }
+
+    deleteLetter = function(){
+        this.letter.textContent = "";
+    }
+
+    isEmpty = function(){
+        return (!this.letter.textContent);
+    }
+
+    select = function(){
+        this.letter.setAttribute("selected","true");
+    }
+
+    deselect = function(){
+        this.letter.setAttribute("selected","false");
+    }
+
+    swapLetter = function(tile){
+        let aux = this.letter.textContent;
+        this.letter.textContent = tile.letter.textContent;
+        tile.letter.textContent = aux;
+    }
 }
 
 class TileGrid{
     constructor(){
         this.rowNumber = 6;
         this.tileNumber = 5;
-        this.tileDict = new Map();
+        this.tileGrid = []
         const gamebox = document.getElementsByClassName("gamebox").item(0);
         for(let i = 0; i<this.rowNumber;i++){
             let row = document.createElement("div");
             row.className = "row";
             gamebox.appendChild(row);
+            this.tileGrid.push([]);
             for(let j = 0; j<this.tileNumber; j++){
                 let tileElement = document.createElement("div");
-                let tileId = i.toString() +",
-"+ j.toString();
-                tileElement.setAttribute("id",
-tileId);
+                let tileId = i.toString() +"," +j.toString();
+                tileElement.setAttribute("id", tileId);
                 tileElement.className = "tile";
                 let colorButton = setupColorButton();
                 let tileLetter = document.createElement("div");
                 tileLetter.className = "tile-letter";
                 tileLetter.setAttribute("onclick",
-"tileGrid.moveCursorToTile(this)")
+                "tileGrid.moveCursorToTile(this)")
+                tileLetter.setAttribute("selected","false");
                 tileElement.appendChild(colorButton);
                 tileElement.appendChild(tileLetter);
                 row.appendChild(tileElement);
-                let tile = new Tile(colorButton,
-tileLetter);
-                this.tileDict.set(tileElement.getAttribute("id"),
- tile);
+                let tile = new Tile(colorButton, tileLetter);
+                this.tileGrid[i].push(tile);
             }
         }
         this.cursorX = 0;
         this.cursorY = 0;
+        this.moveCursorTo(0,0);
     }
 
+    parseId = function(string){
+        let coordinates  = string.split(",");
+        let y = parseInt(coordinates[0]);
+        let x = parseInt(coordinates[1]);
+        return [y,x]; 
+    }
     changeColor = function(element){
-        this.tileDict.get(element.parentNode.getAttribute("id")).rotateColor();
+        let coordinates = this.parseId(element.parentNode.getAttribute("id"));
+        this.tileGrid[coordinates[0]][coordinates[1]].rotateColor();
     }
 
     writeLetter = function(letter){
-        let tileId = this.cursorY.toString() + ",
-" + this.cursorX.toString();
-        if(!this.tileDict.has(tileId)){
-            return
+        let tile = this.tileGrid[this.cursorY][this.cursorX];
+        if(!tile.isEmpty()){
+            return;            
+        }else{
+            tile.writeLetter(letter);
+            this.moveCursorFromCurrentPoint(1,0);
         }
-        this.tileDict.get(tileId).writeLetter(letter);
-        this.moveCursorToNextSpot();
+        
+        
     }
 
-    moveCursorToNextSpot = function(){
-        let newX = this.cursorX +1;
-
-        if(newX >= this.tileNumber){
-            let newY = this.cursorY +1;
-            if(newY >= this.rowNumber){
-                this.cursorX = -1;
-                this.cursorY = -1;
-                return;
+    rowHasLettersAfter = function(rowNumber, tileNumber){
+        for(let i = tileNumber+1; i <this.tileNumber; i++){
+            if(!this.tileGrid[rowNumber][i].isEmpty()){
+                return true;
             }
-            newX = 0;
-            this.cursorY = newY;
         }
-
-        this.cursorX = newX;
+        return false;
     }
 
-    moveCursorToTile(element){
-        let id = element.parentNode.getAttribute("id");
-        let coordinates  = id.split(",
-");
-        this.cursorY = parseInt(coordinates[0]);
-        this.cursorX = parseInt(coordinates[1]); 
+    moveCursorFromCurrentPoint = function(xOffset,yOffset){
+        let newX = this.cursorX + xOffset;
+        if(newX < 0 || newX >= this.tileNumber){
+            return;
+        }
+        this.moveCursorTo(this.cursorY,newX);
     }
 
+    moveCursorToTile = function(element){
+        let coordinates = this.parseId(element.parentNode.getAttribute("id"));
+        
+        this.moveCursorTo(coordinates[0],coordinates[1]);
+    }
+
+    moveCursorTo = function(y,x){
+        let currentTile = this.tileGrid[this.cursorY][this.cursorX];
+        currentTile.deselect();
+        if(this.tileGrid[y][x].isEmpty()){// if empty search for the first empty tile in the row
+            for(let i = 0; i < this.tileNumber; i++){
+                if(this.tileGrid[y][i].isEmpty()){
+                    x = i;
+                    break;
+                }
+            }
+        }
+        this.cursorX = x;
+        this.cursorY = y;
+        
+        currentTile = this.tileGrid[this.cursorY][this.cursorX];
+        currentTile.select();
+    }
+
+    deleteCurrentLetter = function(){
+
+        let tile = this.tileGrid[this.cursorY][this.cursorX];
+        if(tile.isEmpty()){
+            this.moveCursorFromCurrentPoint(-1,0);
+            
+        }
+        this.tileGrid[this.cursorY][this.cursorX].deleteLetter();
+        
+    }
+
+    getTileIdFromCursor = function(){
+        return this.cursorY.toString() + "," + this.cursorX.toString();
+    }
+
+    
 }
 
 const tileGrid = new TileGrid();
@@ -13196,6 +13255,9 @@ document.addEventListener('keydown',
     if(event.key.match("[a-zA-Z]{1}") == event.key){
         console.log(event.key.match("[a-zA-Z]{1}"));
         tileGrid.writeLetter(event.key);
+    }else if(event.key == "Backspace"){
+        tileGrid.deleteCurrentLetter();
+        console.log("vi von zulul");
     }
     
 })
