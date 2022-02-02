@@ -13121,6 +13121,10 @@ class Tile {
         this.letter.textContent = tile.letter.textContent;
         tile.letter.textContent = aux;
     }
+
+    scrollIntoView = function(){
+        this.colorButton.scrollIntoView(true);
+    }
 }
 
 class TileGrid{
@@ -13174,7 +13178,7 @@ class TileGrid{
             return;            
         }else{
             tile.writeLetter(letter);
-            this.moveCursorFromCurrentPoint(1,0);
+            this.moveCursorFromCurrentPoint(0,1);
         }
         
         
@@ -13189,43 +13193,58 @@ class TileGrid{
         return false;
     }
 
-    moveCursorFromCurrentPoint = function(xOffset,yOffset){
-        let newX = this.cursorX + xOffset;
-        if(newX < 0 || newX >= this.tileNumber){
-            return;
+    moveCursorFromCurrentPoint = function(yOffset,xOffset){
+        let x = this.cursorX + xOffset;
+        let y = this.cursorY + yOffset;
+        if(x < 0 || x >= this.tileNumber || y < 0 || y >= this.rowNumber){
+            return
         }
-        this.moveCursorTo(this.cursorY,newX);
+        this.moveCursorTo(y,x);
     }
 
     moveCursorToTile = function(element){
         let coordinates = this.parseId(element.parentNode.getAttribute("id"));
-        
-        this.moveCursorTo(coordinates[0],coordinates[1]);
+        this.moveCursorToCorrespondingTile(coordinates[0]);
+    }
+
+    moveCursorToCorrespondingTile = function(rowNumber){
+        let y = rowNumber;
+        let x = this.tileNumber-1;
+        if(x < 0 || x >= this.tileNumber || y < 0 || y >= this.rowNumber){
+            return
+        }
+        let foundEmpty = false;
+        for(let i = 0; i < this.tileNumber; i++){
+            if(this.tileGrid[y][i].isEmpty()){
+                x = i;
+                break;
+                foundEmpty = true;
+            }
+        }
+            
+        this.moveCursorTo(y,x);
+
     }
 
     moveCursorTo = function(y,x){
+        
         let currentTile = this.tileGrid[this.cursorY][this.cursorX];
         currentTile.deselect();
-        if(this.tileGrid[y][x].isEmpty()){// if empty search for the first empty tile in the row
-            for(let i = 0; i < this.tileNumber; i++){
-                if(this.tileGrid[y][i].isEmpty()){
-                    x = i;
-                    break;
-                }
-            }
-        }
+
+        
         this.cursorX = x;
         this.cursorY = y;
         
         currentTile = this.tileGrid[this.cursorY][this.cursorX];
         currentTile.select();
+        currentTile.scrollIntoView();
     }
 
     deleteCurrentLetter = function(){
 
         let tile = this.tileGrid[this.cursorY][this.cursorX];
         if(tile.isEmpty()){
-            this.moveCursorFromCurrentPoint(-1,0);
+            this.moveCursorFromCurrentPoint(0,-1);
             
         }
         this.tileGrid[this.cursorY][this.cursorX].deleteLetter();
@@ -13236,6 +13255,9 @@ class TileGrid{
         return this.cursorY.toString() + "," + this.cursorX.toString();
     }
 
+    moveCursorFromCurrentRow(rowOffset){
+        this.moveCursorToCorrespondingTile(this.cursorY + rowOffset);
+    }
     
 }
 
@@ -13257,7 +13279,13 @@ document.addEventListener('keydown',
         tileGrid.writeLetter(event.key);
     }else if(event.key == "Backspace"){
         tileGrid.deleteCurrentLetter();
-        console.log("vi von zulul");
+        
+    }else if(event.key == "Enter" || event.key == "ArrowDown"){
+        event.preventDefault();
+        tileGrid.moveCursorFromCurrentRow(1);
+    }else if(event.key == "ArrowUp"){
+        event.preventDefault();
+        tileGrid.moveCursorFromCurrentRow(-1);
     }
     
 })
