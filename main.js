@@ -13020,15 +13020,13 @@ class PresentLetter {
 }
 
 function createValidWords(conditions,
- absentLetters){
+ absentLetters, letterCountMap){
 
     let validWords = [];
 
     for(let word of words){
         
-        if(wordIsValid(word,
-conditions,
-absentLetters)){
+        if(wordIsValid(word, conditions, absentLetters, letterCountMap)){
             validWords.push(word);
         }
     }
@@ -13036,10 +13034,8 @@ absentLetters)){
     return validWords;
 }
 
-function wordIsValid(word,
- conditions,
- absentLetters){
-
+function wordIsValid(word, conditions, absentLetters, letterCountMap){
+    LetterCountMapCopy = new Map(letterCountMap);
     for (let condition of conditions){
 
         if(!condition.validateWord(word)){
@@ -13048,31 +13044,49 @@ function wordIsValid(word,
     }
 
     for(let letter of absentLetters){
-        if (word.includes(letter.toLowerCase().trim())){
+        letter = letter.toLowerCase().trim();
+        if (letterCountMap.has(letter)){
+            if(wordHasWrongLetterCount(word, letter, letterCountMap.get(letter))){
+                return false;
+            }
+        }else if (word.includes(letter)){
             return false;
         }
+       
+        
     }
 
     return true;
 
 }
 
-function test(){
-    console.log(createValidWords([confirmedLetterTest,
-presentLetterTest],
-["o",
-"u",
-"g",
-"d"]));
+
+
+function wordHasWrongLetterCount( word, letter, correctLetterCount){
+    let letterCount = 0;
+    letter = letter.toLowerCase().trim();
+    for (let c of word){
+        if( c == letter){
+            letterCount ++;
+        }
+    }
+    return (letterCount != correctLetterCount);
 }
 
-const confirmedLetterTest = new ConfirmedLetter("r",
-4);
+let testMap = new Map();
+testMap.set("p",2);
 
-const presentLetterTest = new PresentLetter("e",
-[1,
-2,
-0]);
+const confirmedLetterTest = new ConfirmedLetter("p",
+3);
+
+const presentLetterTest = new PresentLetter("p",
+[0,
+4]);
+
+function wordleTest(){
+    console.log(createValidWords([confirmedLetterTest, presentLetterTest],["a","u","d", "s", "y", "P"],testMap));
+}
+
 
 class Tile {
     constructor(colorButton,
@@ -13257,6 +13271,10 @@ class TileGrid{
 
     moveCursorFromCurrentRow(rowOffset){
         this.moveCursorToCorrespondingTile(this.cursorY + rowOffset);
+    }
+
+    evaluate(){
+        console.log("vi von zulul");
     }
     
 }
