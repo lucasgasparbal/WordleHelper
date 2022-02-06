@@ -13106,10 +13106,13 @@ class Tile {
         if(this.state >= this.states.length){
             this.state = 0;
         }
+        this.setColor();
+    }
+
+    setColor = function(){
         this.colorButton.style.backgroundColor = this.states[this.state];
         this.letter.style.backgroundColor = this.states[this.state];
     }
-
     writeLetter = function(letter){
         this.letter.textContent = letter;
     }
@@ -13137,7 +13140,13 @@ class Tile {
     }
 
     scrollIntoView = function(){
-        this.colorButton.scrollIntoView(true);
+        this.colorButton.scrollIntoView({behavior: "smooth", block: "center",inline: "nearest"});
+    }
+
+    clear = function(){
+        this.deleteLetter();
+        this.state = 0;
+        this.setColor();
     }
 }
 
@@ -13275,8 +13284,19 @@ class TileGrid{
 
     evaluate(){
         console.log("vi von zulul");
+        document.getElementsByClassName("overlay").item(0).style.display = "flex";
     }
-    
+
+    clearGrid(){
+        if(confirm("Do you want to wipe the grid?")){
+            for(let i = 0; i < this.rowNumber; i++){
+                for(let j = 0; j < this.tileNumber; j++){
+                    this.tileGrid[i][j].clear();
+                }
+            }
+            this.moveCursorTo(0,0);
+        }
+    }
 }
 
 const tileGrid = new TileGrid();
@@ -13307,3 +13327,7 @@ document.addEventListener('keydown',
     }
     
 })
+
+function resetPopup(){
+    document.getElementsByClassName("overlay").item(0).style.display = "none";
+}

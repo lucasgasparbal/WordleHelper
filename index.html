@@ -10,11 +10,29 @@
 </head>
 <body>
   <div class="wrap" >
-    <header>WordleHelper</header>
+    <header >WordleHelper</header>
     <div class="gamebox">
 
     </div>
-    <button class="submit" onclick="tileGrid.evaluate()">SUBMIT</button>
+    <div class="button-holder">
+      <button class="submit" onclick="tileGrid.evaluate()">SUBMIT</button>
+      <button class="clear" onclick="tileGrid.clearGrid()">CLEAR</button>
+    </div>
+  </div>
+  <div class="overlay" onclick="resetPopup()">
+    <div class="popup" >
+      <h1>Your Word:</h1>
+      <div class="word-recipient">AERIE</div>
+      <p class="word-meaning">this will be the meaning of the word.<br>
+        very cool.</p>
+      <div class="button-holder">
+        <button class="submit" onclick="resultDisplayer.showAnotherWord">Get another word</button>
+      <button class="clear" onclick="resetPopup()">Try Again</button>
+      </div>
+    </div>
+  </div>
+ 
+
   </div>
  
   
