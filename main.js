@@ -12973,25 +12973,64 @@ const words = ['aahed',
 
 'zymic'];
 
-const wordRecipient = document.getElementById("wordRecipient");
+class LetterCountRegister{
+    constructor(){
+        this.map = new Map();
+        this.lettersWithMaxCount = [];
+    }
 
-function printWord(){
-    
-    console.log("POGGERS");
-    wordRecipient.textContent = pickRandomWord(words);
+    setLetterCount = function(letter, count){
+        let key = letter.trim().toLowerCase();
+        this.map.set(key,count);
+    }
+
+    setMax = function(letter){
+        let key = letter.trim().toLowerCase();
+        if(!this.lettersWithMaxCount.includes(key)){
+            if(!this.map.has(key)){
+                this.map.set(key, 0);
+            }
+            this.lettersWithMaxCount.push(key);
+        }
+    }
+
+    wordIsValid = function(word){
+        for(let letter of word){
+            let key = letter.trim().toLowerCase();
+            if(!this.map.has(key)){
+                continue;
+            }else{
+                let correctCount = this.map.get(key);
+                let count = 0;
+                for(let char of word){
+                    if(char == letter){
+                        count++;
+                    }
+                }
+                if(count < correctCount){
+                    return false;
+                }else{
+                    if(this.lettersWithMaxCount.includes(key)){
+                        if(count > correctCount){
+                            return false;
+                        }
+                        
+                    }
+                }
+               
+            }
+        }
+
+        return true;
+    }
+
 }
 
-function pickRandomWord(words){
-    var index = Math.floor(Math.random()*(words.length-1));
-    return words[index];
-}
 
 class ConfirmedLetter {
-    constructor(letter,
- position) {
+    constructor(letter, position) {
         this.letter = letter.toLowerCase();
         this.position = position;
-
         
     }
 
@@ -12999,11 +13038,14 @@ class ConfirmedLetter {
         let wordLower = word.toLowerCase().trim();
         return (wordLower.charAt(this.position) === this.letter);
     };
+
+    isSameAs = function(confirmedLetterCondition){
+        return(this.letter == confirmedLetterCondition.letter && this.position == confirmedLetterCondition.position);
+    }
 }
 
 class PresentLetter {
-    constructor(letter,
- positions) {
+    constructor(letter, positions) {
         this.letter = letter.toLowerCase();
         this.positions = positions;    
     }
@@ -13017,16 +13059,41 @@ class PresentLetter {
         }
         return true;
     };
+
+    isSameAs = function(presentLetterCondition){
+        if(!(this.letter == presentLetterCondition.letter)){
+            return false;
+        }
+
+
+        for(let i = 0; i < this.positions.length; i++){
+            let match = false;
+            for(let j = 0; j <presentLetterCondition.positions.length; j++){
+                if(presentLetterCondition.positions[j] == this.positions[i]){
+                    match = true;
+                }
+            }
+            if(!match){
+                return false;
+            }
+        }
+
+        return true; 
+    }
+
+    addPosition = function(position){
+        this.positions.push(position);
+    }
+        
 }
 
-function createValidWords(conditions,
- absentLetters, letterCountMap){
+function createValidWords(conditions, letterCountRegister){
 
     let validWords = [];
 
     for(let word of words){
         
-        if(wordIsValid(word, conditions, absentLetters, letterCountMap)){
+        if(wordIsValid(word, conditions, letterCountRegister)){
             validWords.push(word);
         }
     }
@@ -13034,26 +13101,17 @@ function createValidWords(conditions,
     return validWords;
 }
 
-function wordIsValid(word, conditions, absentLetters, letterCountMap){
-    LetterCountMapCopy = new Map(letterCountMap);
+function wordIsValid(word, conditions, letterCountRegister){
+
+    if(!letterCountRegister.wordIsValid(word)){
+        return false;
+    }
+
     for (let condition of conditions){
 
         if(!condition.validateWord(word)){
             return false;
         }
-    }
-
-    for(let letter of absentLetters){
-        letter = letter.toLowerCase().trim();
-        if (letterCountMap.has(letter)){
-            if(wordHasWrongLetterCount(word, letter, letterCountMap.get(letter))){
-                return false;
-            }
-        }else if (word.includes(letter)){
-            return false;
-        }
-       
-        
     }
 
     return true;
@@ -13062,19 +13120,16 @@ function wordIsValid(word, conditions, absentLetters, letterCountMap){
 
 
 
-function wordHasWrongLetterCount( word, letter, correctLetterCount){
-    let letterCount = 0;
-    letter = letter.toLowerCase().trim();
-    for (let c of word){
-        if( c == letter){
-            letterCount ++;
-        }
-    }
-    return (letterCount != correctLetterCount);
+
+
+let testRegister = new LetterCountRegister();
+letters = ["a","u","d", "s", "y","p"];
+testRegister.setLetterCount("p",2);
+for(let letter of letters ){
+    testRegister.setMax(letter);
 }
 
-let testMap = new Map();
-testMap.set("p",2);
+
 
 const confirmedLetterTest = new ConfirmedLetter("p",
 3);
@@ -13083,14 +13138,21 @@ const presentLetterTest = new PresentLetter("p",
 [0,
 4]);
 
+
+
 function wordleTest(){
-    console.log(createValidWords([confirmedLetterTest, presentLetterTest],["a","u","d", "s", "y", "P"],testMap));
+    console.log(createValidWords([confirmedLetterTest, presentLetterTest],testRegister));
 }
 
 
 class Tile {
-    constructor(colorButton,
- letter){
+
+    static STATES = {
+        banned: 0,
+        present: 1,
+        confirmed: 2,
+    }
+    constructor(colorButton,letter, number){
         this.colorButton = colorButton;
         this.letter = letter;
         this.states = ["#3a3a3c",
@@ -13098,13 +13160,14 @@ class Tile {
         "#538d4e"];
         this.state = -1;
         this.rotateColor();
+        this.number = number;
 
     }
 
     rotateColor = function(){
         this.state += 1;
         if(this.state >= this.states.length){
-            this.state = 0;
+            this.state = Tile.STATES["banned"];
         }
         this.setColor();
     }
@@ -13143,10 +13206,37 @@ class Tile {
         this.colorButton.scrollIntoView({behavior: "smooth", block: "center",inline: "nearest"});
     }
 
+    createBannedLetter = function(){
+        if(!this.state == Tile.STATES["banned"]){
+            return;
+        }
+        return this.letter.textContent;
+    }
+
+    createPresentLetterCondition = function(){
+        if(!this.state == Tile.STATES["present"]){
+            return;
+        }
+        let condition = new PresentLetter(this.letter.textContent, [this.number]);
+        return condition;
+    }
+
+    createConfirmedLetterCondition = function(){
+        if(!this.state == Tile.STATES["confirmed"]){
+            return;
+        }
+        let condition = new ConfirmedLetter(this.letter.textContent, this.number);
+        return condition;
+    }
+
     clear = function(){
         this.deleteLetter();
-        this.state = 0;
+        this.state = Tile.STATES["banned"];
         this.setColor();
+    }
+
+    letter = function(){
+        return this.letter.textContent;
     }
 }
 
@@ -13282,12 +13372,33 @@ class TileGrid{
         this.moveCursorToCorrespondingTile(this.cursorY + rowOffset);
     }
 
-    evaluate(){
+    evaluate = function(){
         console.log("vi von zulul");
         document.getElementsByClassName("overlay").item(0).style.display = "flex";
     }
 
-    clearGrid(){
+
+    evaluateRow = function(row){
+        let presentLetters = [];
+        let confirmedLetters = [];
+        let bannedLetters = [];
+        let poop;
+
+        for(let i = 0; i < this.tileNumber; i++){
+            let condition = row[i].createPresentLetterCondition();
+            addConditionToArray(condition,presentLetters);
+            condition = row[i].createConfirmedLetterCondition();
+            addConditionToArray(condition,confirmedLetters);
+        }
+    }
+
+    addConditionToArray = function(condition, array){
+        if(condition){
+            array.push(condition);
+        }
+    }
+
+    clearGrid = function(){
         if(confirm("Do you want to wipe the grid?")){
             for(let i = 0; i < this.rowNumber; i++){
                 for(let j = 0; j < this.tileNumber; j++){
