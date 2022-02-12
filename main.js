@@ -12981,6 +12981,9 @@ class LetterCountRegister{
 
     setLetterCount = function(letter, count){
         let key = letter.trim().toLowerCase();
+        if(this.map.has(key) && (this.map.get(key) >= count)){
+            return;
+        }
         this.map.set(key,count);
     }
 
@@ -12995,29 +12998,23 @@ class LetterCountRegister{
     }
 
     wordIsValid = function(word){
-        for(let letter of word){
-            let key = letter.trim().toLowerCase();
-            if(!this.map.has(key)){
-                continue;
+        for(let key of this.map.keys()){
+            let wordLetterCount = 0;
+            let correctCount = this.map.get(key);
+            for(let c of word){
+                if(c == key){
+                    wordLetterCount ++;
+                }
+            }
+            if(wordLetterCount < correctCount){
+                return false;
             }else{
-                let correctCount = this.map.get(key);
-                let count = 0;
-                for(let char of word){
-                    if(char == letter){
-                        count++;
+                if(this.lettersWithMaxCount.includes(key)){
+                    if(wordLetterCount > correctCount){
+                        return false;
                     }
+                    
                 }
-                if(count < correctCount){
-                    return false;
-                }else{
-                    if(this.lettersWithMaxCount.includes(key)){
-                        if(count > correctCount){
-                            return false;
-                        }
-                        
-                    }
-                }
-               
             }
         }
 
@@ -13035,6 +13032,9 @@ class ConfirmedLetter {
     }
 
     validateWord = function (word) {
+        if(!word){
+            return true;
+        }
         let wordLower = word.toLowerCase().trim();
         return (wordLower.charAt(this.position) === this.letter);
     };
@@ -13045,12 +13045,16 @@ class ConfirmedLetter {
 }
 
 class PresentLetter {
+    
     constructor(letter, positions) {
         this.letter = letter.toLowerCase();
         this.positions = positions;    
     }
 
     validateWord = function (word) {
+        if(!word){
+            return true;
+        }
         let wordLower = word.toLowerCase().trim();
         for (let i = 0; i < this.positions.length; i++) {
             if (wordLower.charAt(this.positions[i]) === this.letter) {
@@ -13081,9 +13085,27 @@ class PresentLetter {
         return true; 
     }
 
-    addPosition = function(position){
-        this.positions.push(position);
+    joinWithSameLetterCondition(condition){
+        if(this.letter != condition.letter || this.isSameAs(condition)){
+            return null;
+        }
+        let newCondition = new PresentLetter(this.letter,this.positions);
+        for( let position of condition.positions){
+            let alreadyAccountedFor = false;
+            for(let accountedPosition of newCondition.positions){
+                if(position == accountedPosition){
+                    alreadyAccountedFor = true;
+                    break;
+                }
+            }
+            if(!alreadyAccountedFor){
+                newCondition.positions.push(position);
+            }
+        }
+        return newCondition;
     }
+
+
         
 }
 
@@ -13207,23 +13229,23 @@ class Tile {
     }
 
     createBannedLetter = function(){
-        if(!this.state == Tile.STATES["banned"]){
-            return;
+        if(this.state != Tile.STATES["banned"]){
+            return null;
         }
         return this.letter.textContent;
     }
 
     createPresentLetterCondition = function(){
-        if(!this.state == Tile.STATES["present"]){
-            return;
+        if(this.state != Tile.STATES["present"]){
+            return null;
         }
         let condition = new PresentLetter(this.letter.textContent, [this.number]);
         return condition;
     }
 
     createConfirmedLetterCondition = function(){
-        if(!this.state == Tile.STATES["confirmed"]){
-            return;
+        if(this.state != Tile.STATES["confirmed"]){
+            return null;
         }
         let condition = new ConfirmedLetter(this.letter.textContent, this.number);
         return condition;
@@ -13235,8 +13257,8 @@ class Tile {
         this.setColor();
     }
 
-    letter = function(){
-        return this.letter.textContent;
+    getLetter(){
+        return this.letter.textContent.trim().toLowerCase();
     }
 }
 
@@ -13265,7 +13287,7 @@ class TileGrid{
                 tileElement.appendChild(colorButton);
                 tileElement.appendChild(tileLetter);
                 row.appendChild(tileElement);
-                let tile = new Tile(colorButton, tileLetter);
+                let tile = new Tile(colorButton, tileLetter, j);
                 this.tileGrid[i].push(tile);
             }
         }
@@ -13374,28 +13396,108 @@ class TileGrid{
 
     evaluate = function(){
         console.log("vi von zulul");
-        document.getElementsByClassName("overlay").item(0).style.display = "flex";
+
+        let letterCountRegister = new LetterCountRegister();
+        let presentLetters = [];
+        let confirmedLetters = [];
+        for(let i = 0; i < this.rowNumber; i++){
+            let conditions = this.evaluateRow(this.tileGrid[i],letterCountRegister);
+            let presentLettersOnRow = conditions[0];
+            let confirmedLettersOnRow = conditions[1];
+            let filteredPresentLetters = filterConditions(presentLettersOnRow,presentLetters);
+            let filteredConfirmedLetters = filterConditions(confirmedLettersOnRow,confirmedLetters);
+
+            presentLetters = presentLetters.concat(filteredPresentLetters);
+            confirmedLetters = confirmedLetters.concat(filteredConfirmedLetters);
+
+        }
+
+        presentLetters = joinPresentConditions(presentLetters);
+
+        let validWords = createValidWords(presentLetters.concat(confirmedLetters),letterCountRegister);
+        console.log(validWords);
+        //document.getElementsByClassName("overlay").item(0).style.display = "flex";
+
+        function filterConditions( conditionsToBeFiltered, conditions){
+            let filteredConditions = []
+            for(let conditionToEvaluate of conditionsToBeFiltered){
+                let conditionRepeated = false;
+                for(let condition of conditions){
+                    if(condition.isSameAs(conditionToEvaluate)){
+                        conditionRepeated = true;
+                        break;
+                    }
+                }
+                if(!conditionRepeated){
+                    filteredConditions.push(conditionToEvaluate);
+                }
+            }
+            return filteredConditions;
+        }
+
+        function joinPresentConditions(conditions){
+
+            for(let i = 0; i < conditions.length-1; i++){
+                for(let j = i+1; j < conditions.length; j++){
+                    let result = conditions[i].joinWithSameLetterCondition(conditions[j]);
+                    if(!result){
+                        continue;
+                    }else{
+                        conditions.splice(i,1,result);
+                        conditions.splice(j,1);
+                        return joinPresentConditions(conditions);
+                    }
+
+
+                }
+            }
+
+            return conditions;
+        }
     }
 
 
-    evaluateRow = function(row){
+    evaluateRow = function(row, letterCountRegister){
         let presentLetters = [];
         let confirmedLetters = [];
         let bannedLetters = [];
-        let poop;
-
+        let countMap = new Map();
+        
         for(let i = 0; i < this.tileNumber; i++){
+            let letter = row[i].getLetter().trim().toLowerCase();
+            if(!letter){
+                continue;
+            }
+            if(!countMap.has(letter)){
+                countMap.set(letter, 0);
+            }
             let condition = row[i].createPresentLetterCondition();
-            addConditionToArray(condition,presentLetters);
+            this.addConditionToArray(condition, presentLetters,letter,countMap);
             condition = row[i].createConfirmedLetterCondition();
-            addConditionToArray(condition,confirmedLetters);
+            this.addConditionToArray(condition, confirmedLetters,letter,countMap);
+            let bannedLetter = row[i].createBannedLetter();
+            this.addConditionToArray(bannedLetter, bannedLetters);
         }
-    }
+        for(let key of countMap.keys()){
+            letterCountRegister.setLetterCount(key,countMap.get(key));
+        }
+        for(let letter of bannedLetters){
+            letterCountRegister.setMax(letter);
+        }
 
-    addConditionToArray = function(condition, array){
+        return[presentLetters,confirmedLetters];
+
+    }   
+
+    addConditionToArray = function(condition, array, letter="", map = null){
         if(condition){
             array.push(condition);
+            if(map){
+                map.set(letter, map.get(letter)+1);
+            }
         }
+
+        
     }
 
     clearGrid = function(){
@@ -13411,6 +13513,7 @@ class TileGrid{
 }
 
 const tileGrid = new TileGrid();
+
 function setupColorButton(){
     let colorButton = document.createElement("div");
     colorButton.className = "color-button";
