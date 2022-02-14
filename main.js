@@ -13278,7 +13278,7 @@ class TileGrid{
                 let tileId = i.toString() +"," +j.toString();
                 tileElement.setAttribute("id", tileId);
                 tileElement.className = "tile";
-                let colorButton = setupColorButton();
+                let colorButton = this.setupColorButton();
                 let tileLetter = document.createElement("div");
                 tileLetter.className = "tile-letter";
                 tileLetter.setAttribute("onclick",
@@ -13294,6 +13294,14 @@ class TileGrid{
         this.cursorX = 0;
         this.cursorY = 0;
         this.moveCursorTo(0,0);
+    }
+
+    setupColorButton = function(){
+        let colorButton = document.createElement("div");
+        colorButton.className = "color-button";
+        colorButton.setAttribute("onclick",
+    "tileGrid.changeColor(this)");
+        return colorButton;
     }
 
     parseId = function(string){
@@ -13416,7 +13424,8 @@ class TileGrid{
 
         let validWords = createValidWords(presentLetters.concat(confirmedLetters),letterCountRegister);
         console.log(validWords);
-        //document.getElementsByClassName("overlay").item(0).style.display = "flex";
+
+        resultPrompter.showWord(validWords);
 
         function filterConditions( conditionsToBeFiltered, conditions){
             let filteredConditions = []
@@ -13512,15 +13521,86 @@ class TileGrid{
     }
 }
 
-const tileGrid = new TileGrid();
+class ResultPrompter{
+    constructor(){
+        this.overlay = document.getElementById("overlay");
+        this.popup = document.getElementById("popup");
+        this.latestResults = []
+        this.lastPickedWord = "";
+        let header = document.createElement("h1");
+        header.textContent = "Your word:";
 
-function setupColorButton(){
-    let colorButton = document.createElement("div");
-    colorButton.className = "color-button";
-    colorButton.setAttribute("onclick",
-"tileGrid.changeColor(this)");
-    return colorButton;
+        this.wordRecipient = document.createElement("div");
+        this.wordRecipient.setAttribute("id","word-recipient");
+
+        let textWrap = document.createElement("div");
+        textWrap.setAttribute("class","text-wrap");
+
+        this.partOfSpeech = document.createElement("div");
+        this.partOfSpeech.setAttribute("id","part-of-speech");
+
+        this.wordMeaning = document.createElement("p");
+        this.wordMeaning.setAttribute("id","word-meaning");
+
+        let buttonHolder = document.createElement("div");
+        buttonHolder.setAttribute("class","button-holder");
+        
+        let otherWordButton = document.createElement("button");
+        otherWordButton.setAttribute("onclick","resultPrompter.showAnotherWord()");
+        otherWordButton.textContent = "get another valid word";
+
+        let tryAgainButton = document.createElement("button");
+        tryAgainButton.setAttribute("onclick","resetPopup()");
+        tryAgainButton.textContent = "go back";
+
+        
+        addElementsToParent([this.partOfSpeech,this.wordMeaning],textWrap);
+        addElementsToParent([otherWordButton,tryAgainButton],buttonHolder);
+
+        this.popupElements = [header,this.wordRecipient,textWrap,buttonHolder];
+
+        addElementsToParent(this.popupElements,this.popup);
+    }
+
+    showWord(words){
+        this.latestResults = words;
+
+        addElementsToParent(this.popupElements,this.popup);
+        
+        this.lastPickedWord = this.pickRandomWord(this.latestResults);
+        
+        this.wordRecipient.textContent = this.lastPickedWord;
+
+        this.overlay.style.display = "flex";
+    }
+
+    pickRandomWord = function(words){
+        var index = Math.floor(Math.random()*(words.length));
+        return words[index];
+    }
+
+    showAnotherWord = function(){
+       let word = this.pickRandomWord(this.latestResults);
+
+       if(this.latestResults.length > 1){
+        while(word == this.lastPickedWord){
+            word = this.pickRandomWord(this.latestResults);
+        }
+       }
+       
+       this.wordRecipient.textContent = word;
+    }
+
 }
+
+function addElementsToParent(elements,parent){
+    for(element of elements){
+        parent.appendChild(element);
+    }
+    
+}
+
+
     
 
 document.addEventListener('keydown',
@@ -13543,5 +13623,37 @@ document.addEventListener('keydown',
 })
 
 function resetPopup(){
-    document.getElementsByClassName("overlay").item(0).style.display = "none";
+    popup = document.getElementById("popup");
+
+    for(element of popup.children){
+        popup.removeChild(element);
+    }
+    document.getElementById("overlay").style.display = "none";;
+    
 }
+
+
+
+let tileGrid = null;
+let resultPrompter = new ResultPrompter();
+
+window.onload = function(){
+    tileGrid = new TileGrid();
+    
+}
+
+document.getElementById("overlay").addEventListener('click',(event)=>{
+
+    let clickedInside = false;
+    let element = event.target;
+    while(element){
+        if(element.id == "popup"){
+            clickedInside = true;
+        }
+        element = element.parentNode;
+    }
+    if(!clickedInside){
+        resetPopup();
+    }
+})
+

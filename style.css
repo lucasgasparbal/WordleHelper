@@ -1,17 +1,18 @@
 html{
-    height: 100%;
+    height: 100;
 }
 
 
 body{
-    min-height: 100%;
-    min-width: 100%;
+    line-height: 1.6;
+    word-spacing: 16%;
     font-family: Arial, Helvetica, sans-serif;
     color: white;
-    background-color: #2A2728;
+    background-color: #121213;
 }
 
 .wrap{
+    max-height: 80%;
     position:relative;
     display: flex;
     width: auto;
@@ -21,7 +22,7 @@ body{
     align-items: center;
 }
 .gamebox{
-    
+    max-height: 80%;
     display: grid;
     grid-template-rows: repeat(6, 1fr);
     grid-gap: 10px;
@@ -31,6 +32,7 @@ body{
     align-self: center;
     justify-content: center;
     align-items: center;
+    margin: 1rem;
 }
 
 .row{
@@ -103,16 +105,16 @@ body{
 button{
     display: inline-block;
     flex-wrap: wrap;
-    flex:content;
-    background-color: #2A2728;
+    flex:auto;
+    background-color: #121213;
     border-style: 2px solid gray;
-    width: 10%;
     padding: 1rem;
-    min-height: 10%;
-    min-width: none;
+    text-transform: uppercase;
+    height: max-content;
+    font-weight: bold;
     color: white;
     box-sizing: border-box;
-    margin-inline: 2rem;
+    margin: 2rem;
 }
 
 .button-holder{
@@ -121,6 +123,9 @@ button{
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
+    align-items: center;
+    justify-items: center;
+    margin: 0.5rem;
 }
 
 header{
@@ -128,30 +133,75 @@ header{
     border-bottom: inset 2px rgba(128, 128, 128, 0.459);
     padding: 0.25rem;
     margin-bottom: 1rem;
+    user-select: none;
 }
 
-.popup{
-    display:block;
+#popup{
+    display:flex;
 
-    z-index: 10;
+    z-index: 100;
     position: relative;
     top: 6rem;
     width: 25%;
     border: 2px inset gray;
     padding: 1rem;
-    background-color:#2A2728;
+    background-color:#121213;
+    align-items: flex-start;
+    flex-direction: column;
+    flex-wrap: wrap;
 
 }
 
-.overlay{
+#overlay{
     display: none;
     position: absolute;
     width: 100%;
-    height: 100vh;
+    height: 100%;
     top: 0;
     left: 0;
     justify-content: center;
     align-items: start;
     background-color: rgba(0, 0, 0, 0.459);
-    z-index: 3000;
+    z-index: 9;
+}
+
+#popup{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-items: start;
+    max-width: 25%;
+}
+
+#word-recipient{
+    align-self: center;
+    font-size: 3.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    
+
+}
+
+#part-of-speech{
+    align-self: start;
+    flex:content;
+    font-weight: lighter;
+    font-style: italic;
+    
+}
+
+#word-meaning{
+    width: 100%;
+    flex:content;
+    text-align: justify;
+    
+
+}
+
+.text-wrap{
+    width: 85%;
+    /*border: thin double rgba(128, 128, 128, 0.459);*/
+    margin: 5%;
+    padding: 2.5%;
+    
 }
