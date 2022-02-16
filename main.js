@@ -13522,11 +13522,13 @@ class TileGrid{
 }
 
 class ResultPrompter{
+
     constructor(){
         this.overlay = document.getElementById("overlay");
         this.popup = document.getElementById("popup");
-        this.latestResults = []
+        this.latestResults = [];
         this.lastPickedWord = "";
+        this.lastPickedWordMeanings = [];
         let header = document.createElement("h1");
         header.textContent = "Your word:";
 
@@ -13547,7 +13549,7 @@ class ResultPrompter{
         
         let otherWordButton = document.createElement("button");
         otherWordButton.setAttribute("onclick","resultPrompter.showAnotherWord()");
-        otherWordButton.textContent = "get another valid word";
+        otherWordButton.textContent = "get another word";
 
         let tryAgainButton = document.createElement("button");
         tryAgainButton.setAttribute("onclick","resetPopup()");
@@ -13560,6 +13562,8 @@ class ResultPrompter{
         this.popupElements = [header,this.wordRecipient,textWrap,buttonHolder];
 
         addElementsToParent(this.popupElements,this.popup);
+
+        this.dictionaryUrl = "https://api.dictionaryapi.dev/api/v2/entries/en/";
     }
 
     showWord(words){
@@ -13570,7 +13574,7 @@ class ResultPrompter{
         this.lastPickedWord = this.pickRandomWord(this.latestResults);
         
         this.wordRecipient.textContent = this.lastPickedWord;
-
+        this.showDictionaryDefinition(this.lastPickedWord);
         this.overlay.style.display = "flex";
     }
 
@@ -13587,10 +13591,55 @@ class ResultPrompter{
             word = this.pickRandomWord(this.latestResults);
         }
        }
+
+       this.lastPickedWord = word;
        
-       this.wordRecipient.textContent = word;
+       this.wordRecipient.textContent = this.lastPickedWord;
+       this.showDictionaryDefinition(this.lastPickedWord);
     }
 
+    showDictionaryDefinition(word){
+        let url = "https://api.dictionaryapi.dev/api/v2/entries/en/"+word;
+        let resultPrompter = this;
+        fetch(url).then(response => {
+            if(!response.ok){
+                resultPrompter.partOfSpeech.textContent ="";
+                resultPrompter.wordMeaning.textContent  = "Sorry, we could not find the meaning of the word in the dictionary. :(";
+                throw new TypeError();
+            }
+            return response.json()
+            
+        }).then(
+            (data) => {
+                
+                this.extractMeanings(data);
+                
+            }).catch(e => console.log(e));
+    }
+
+    extractMeanings(dictData){
+        let meanings = [];
+        for( let word of dictData){
+            let pluralText = "";
+            if(word.word.length < this.lastPickedWord.length){
+                let additionalText = ""
+                if(this.lastPickedWord.charAt(4) == "s"){
+                    additionalText = "Plural of ";
+                }else{
+                    additionalText = "Conjugation of ";
+                }
+                pluralText = additionalText+word.word +" - " ;
+            }
+            for(let meaning of word.meanings){
+                for(let definition of meaning.definitions){
+                    console.log(meaning.partOfSpeech+definition.definition);
+                    this.wordMeaning.textContent = definition.definition;
+                    this.partOfSpeech.textContent = pluralText + meaning.partOfSpeech;
+                    
+                }
+            }
+        }
+    }
 }
 
 function addElementsToParent(elements,parent){
@@ -13656,4 +13705,3 @@ document.getElementById("overlay").addEventListener('click',(event)=>{
         resetPopup();
     }
 })
-
