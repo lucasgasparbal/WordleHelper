@@ -13529,6 +13529,7 @@ class ResultPrompter{
         this.latestResults = [];
         this.lastPickedWord = "";
         this.lastPickedWordMeanings = [];
+        this.meaningIndex = 0;
         let header = document.createElement("h1");
         header.textContent = "Your word:";
 
@@ -13612,7 +13613,9 @@ class ResultPrompter{
         }).then(
             (data) => {
                 
-                this.extractMeanings(data);
+               this.lastPickedWordMeanings = this.extractMeanings(data);
+                this.meaningIndex = 0;
+                this.showMeaning();
                 
             }).catch(e => console.log(e));
     }
@@ -13633,12 +13636,17 @@ class ResultPrompter{
             for(let meaning of word.meanings){
                 for(let definition of meaning.definitions){
                     console.log(meaning.partOfSpeech+definition.definition);
-                    this.wordMeaning.textContent = definition.definition;
-                    this.partOfSpeech.textContent = pluralText + meaning.partOfSpeech;
+                    meanings.push([pluralText + meaning.partOfSpeech, definition.definition]);
                     
                 }
             }
         }
+        return meanings
+    }
+
+    showMeaning(){
+        this.partOfSpeech.textContent = this.lastPickedWordMeanings[this.meaningIndex][0];
+        this.wordMeaning.textContent = this.lastPickedWordMeanings[this.meaningIndex][1];
     }
 }
 
@@ -13698,6 +13706,7 @@ document.getElementById("overlay").addEventListener('click',(event)=>{
     while(element){
         if(element.id == "popup"){
             clickedInside = true;
+            break;
         }
         element = element.parentNode;
     }
