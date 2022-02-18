@@ -13558,6 +13558,29 @@ class ResultPrompter{
         this.wordMeaning = document.createElement("p");
         this.wordMeaning.setAttribute("id","word-meaning");
 
+        this.dictionaryCredit = document.createElement("p");
+        this.dictionaryCredit.setAttribute("id","dict-credit");
+        this.dictionaryCredit.textContent = "definitions provided by ";
+        this.dictionaryCredit.style.display = "none";
+
+        let dictionaryApiUrl = document.createElement("a");
+        dictionaryApiUrl.setAttribute("href","https://dictionaryapi.dev");
+        dictionaryApiUrl.setAttribute("target","_blank");
+        dictionaryApiUrl.textContent = "dictionaryapi.dev";
+
+        this.dictionaryCredit.appendChild(dictionaryApiUrl);
+
+        let dictionaryCreditSeparator = document.createElement("span");
+        dictionaryCreditSeparator.textContent = " under "
+        this.dictionaryCredit.appendChild(dictionaryCreditSeparator);
+
+        this.dictLicense = document.createElement("a");
+        this.dictLicense.setAttribute("target","_blank");
+
+        this.dictionaryCredit.appendChild(this.dictLicense);
+
+        
+
         let buttonHolder = document.createElement("div");
         buttonHolder.setAttribute("class","button-holder");
         
@@ -13570,7 +13593,7 @@ class ResultPrompter{
         tryAgainButton.textContent = "go back";
 
         addElementsToParent([prevButton,textWrap,nextButton],meaningWrap);
-        addElementsToParent([this.partOfSpeech,this.wordMeaning],textWrap);
+        addElementsToParent([this.partOfSpeech,this.wordMeaning,this.dictionaryCredit],textWrap);
         addElementsToParent([otherWordButton,tryAgainButton],buttonHolder);
 
         this.popupElements = [header,this.wordRecipient,meaningWrap,buttonHolder];
@@ -13614,10 +13637,11 @@ class ResultPrompter{
         let resultPrompter = this;
         fetch(url).then(response => {
             if(!response.ok){
-                resultPrompter.partOfSpeech.textContent ="";
-                resultPrompter.wordMeaning.textContent  = "Sorry, we could not find the meaning of the word in the dictionary. :(";
-                resultPrompter.lastPickedWordMeanings = [];
-                throw new TypeError();
+                this.partOfSpeech.textContent ="";
+                this.wordMeaning.textContent  = "Sorry, we could not find the meaning of the word in the dictionary. :(";
+                this.lastPickedWordMeanings = [];
+                this.lastPickedWord = "";
+                throw new TypeError("404");
             }
             return response.json()
             
@@ -13628,12 +13652,18 @@ class ResultPrompter{
                 this.meaningIndex = 0;
                 this.showMeaning();
                 
+                
             }).catch(e => console.log(e));
     }
 
     extractMeanings = function(dictData){
         let meanings = [];
         for( let word of dictData){
+            if(!this.dictLicense.textContent){
+                this.dictLicense.textContent = word.license.name;
+                this.dictLicense.setAttribute("href",word.license.url);
+                this.dictionaryCredit.style.display = "block";
+            }
             let pluralText = "";
             if(word.word.length < this.lastPickedWord.length){
                 let additionalText = "";
@@ -13675,6 +13705,9 @@ class ResultPrompter{
 
 
     showMeaning = function(){
+        if(this.lastPickedWordMeanings.length < 1){
+            return;
+        }
         this.partOfSpeech.textContent = this.lastPickedWordMeanings[this.meaningIndex][0];
         this.wordMeaning.textContent = this.lastPickedWordMeanings[this.meaningIndex][1];
     }
@@ -13715,7 +13748,7 @@ function resetPopup(){
     while (popup.firstChild) {
         popup.removeChild(popup.firstChild);
       }
-    document.getElementById("overlay").style.display = "none";;
+    document.getElementById("overlay").style.display = "none";
     
 }
 

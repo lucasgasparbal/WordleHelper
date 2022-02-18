@@ -179,14 +179,17 @@ header{
     align-self: start;
     font-weight: lighter;
     font-style: italic;
+    min-height: 1.6rem;
     
 }
 
 #word-meaning{
     text-align: justify;
-    min-height: 80%;
+    min-height: 70%;
+    max-height: 70%;
     font-size: 1.1rem;
     padding-inline-end: 1rem;
+    margin-block-end: 0;
     overflow:auto;
 }
 
@@ -216,4 +219,11 @@ header{
     margin:auto;
     padding: 0.5rem;
     height:100%;
+}
+
+#dict-credit{
+    font-size: 0.7rem;
+    font-style: italic;
+    font-weight: lighter;
+    margin-block-start: 0.25rem;
 }
