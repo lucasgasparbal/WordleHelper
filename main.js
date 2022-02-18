@@ -13536,6 +13536,19 @@ class ResultPrompter{
         this.wordRecipient = document.createElement("div");
         this.wordRecipient.setAttribute("id","word-recipient");
 
+        let meaningWrap = document.createElement("div");
+        meaningWrap.setAttribute("id","meaning-wrap");
+
+        let prevButton = document.createElement("button");
+        prevButton.setAttribute("class","meaning-button");
+        prevButton.setAttribute("onclick","resultPrompter.showPreviousMeaning()")
+        prevButton.textContent = "<";
+
+        let nextButton = document.createElement("button");
+        nextButton.setAttribute("class","meaning-button");
+        nextButton.setAttribute("onclick","resultPrompter.showNextMeaning()")
+        nextButton.textContent = ">";
+
         let textWrap = document.createElement("div");
         textWrap.setAttribute("class","text-wrap");
 
@@ -13556,13 +13569,11 @@ class ResultPrompter{
         tryAgainButton.setAttribute("onclick","resetPopup()");
         tryAgainButton.textContent = "go back";
 
-        
+        addElementsToParent([prevButton,textWrap,nextButton],meaningWrap);
         addElementsToParent([this.partOfSpeech,this.wordMeaning],textWrap);
         addElementsToParent([otherWordButton,tryAgainButton],buttonHolder);
 
-        this.popupElements = [header,this.wordRecipient,textWrap,buttonHolder];
-
-        addElementsToParent(this.popupElements,this.popup);
+        this.popupElements = [header,this.wordRecipient,meaningWrap,buttonHolder];
 
         this.dictionaryUrl = "https://api.dictionaryapi.dev/api/v2/entries/en/";
     }
@@ -13594,18 +13605,18 @@ class ResultPrompter{
        }
 
        this.lastPickedWord = word;
-       
        this.wordRecipient.textContent = this.lastPickedWord;
        this.showDictionaryDefinition(this.lastPickedWord);
     }
 
-    showDictionaryDefinition(word){
+    showDictionaryDefinition = function(word){
         let url = "https://api.dictionaryapi.dev/api/v2/entries/en/"+word;
         let resultPrompter = this;
         fetch(url).then(response => {
             if(!response.ok){
                 resultPrompter.partOfSpeech.textContent ="";
                 resultPrompter.wordMeaning.textContent  = "Sorry, we could not find the meaning of the word in the dictionary. :(";
+                resultPrompter.lastPickedWordMeanings = [];
                 throw new TypeError();
             }
             return response.json()
@@ -13620,18 +13631,18 @@ class ResultPrompter{
             }).catch(e => console.log(e));
     }
 
-    extractMeanings(dictData){
+    extractMeanings = function(dictData){
         let meanings = [];
         for( let word of dictData){
             let pluralText = "";
             if(word.word.length < this.lastPickedWord.length){
-                let additionalText = ""
+                let additionalText = "";
                 if(this.lastPickedWord.charAt(4) == "s"){
                     additionalText = "Plural of ";
                 }else{
                     additionalText = "Conjugation of ";
                 }
-                pluralText = additionalText+word.word +" - " ;
+                pluralText = additionalText+word.word +" - ";
             }
             for(let meaning of word.meanings){
                 for(let definition of meaning.definitions){
@@ -13644,7 +13655,26 @@ class ResultPrompter{
         return meanings
     }
 
-    showMeaning(){
+    showNextMeaning = function(){
+        let newIndex = this.meaningIndex + 1;
+        if(newIndex >= this.lastPickedWordMeanings.length){
+            newIndex = 0;
+        }
+        this.meaningIndex = newIndex;
+        this.showMeaning();
+    }
+
+    showPreviousMeaning = function(){
+        let newIndex = this.meaningIndex -1;
+        if(newIndex < 0){
+            newIndex = this.lastPickedWordMeanings.length - 1;
+        }
+        this.meaningIndex = newIndex;
+        this.showMeaning();
+    }
+
+
+    showMeaning = function(){
         this.partOfSpeech.textContent = this.lastPickedWordMeanings[this.meaningIndex][0];
         this.wordMeaning.textContent = this.lastPickedWordMeanings[this.meaningIndex][1];
     }
@@ -13682,9 +13712,9 @@ document.addEventListener('keydown',
 function resetPopup(){
     popup = document.getElementById("popup");
 
-    for(element of popup.children){
-        popup.removeChild(element);
-    }
+    while (popup.firstChild) {
+        popup.removeChild(popup.firstChild);
+      }
     document.getElementById("overlay").style.display = "none";;
     
 }
