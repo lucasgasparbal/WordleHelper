@@ -13409,15 +13409,15 @@ class TileGrid{
         let presentLetters = [];
         let confirmedLetters = [];
         for(let i = 0; i < this.rowNumber; i++){
-            let conditions = this.evaluateRow(this.tileGrid[i],letterCountRegister);
-            let presentLettersOnRow = conditions[0];
-            let confirmedLettersOnRow = conditions[1];
-            let filteredPresentLetters = filterConditions(presentLettersOnRow,presentLetters);
-            let filteredConfirmedLetters = filterConditions(confirmedLettersOnRow,confirmedLetters);
 
-            presentLetters = presentLetters.concat(filteredPresentLetters);
-            confirmedLetters = confirmedLetters.concat(filteredConfirmedLetters);
-
+            try{
+                let conditions = this.evaluateRow(this.tileGrid[i],letterCountRegister);
+            }catch(e){
+                createErrorPrompt(`Word ${i+1} is missing letters`,2);
+                return;
+            }
+            
+            
         }
 
         presentLetters = joinPresentConditions(presentLetters);
@@ -13475,7 +13475,10 @@ class TileGrid{
         for(let i = 0; i < this.tileNumber; i++){
             let letter = row[i].getLetter().trim().toLowerCase();
             if(!letter){
-                continue;
+                if(i > 0){
+                    throw new Error();
+                }
+                return;
             }
             if(!countMap.has(letter)){
                 countMap.set(letter, 0);
@@ -13714,13 +13717,37 @@ class ResultPrompter{
 }
 
 function addElementsToParent(elements,parent){
-    for(element of elements){
+    for(let element of elements){
         parent.appendChild(element);
     }
     
 }
 
 
+function createErrorPrompt(message,duration){
+    let element = document.createElement("div");
+    element.setAttribute("class","error-popup");
+    element.textContent = "ERROR: "+message;
+    let displayer = document.getElementById("error-displayer");
+
+    if(displayer.childNodes.length >= 10){
+        displayer.removeChild(displayer.lastChild);
+    }
+
+    if(displayer.hasChildNodes){
+        displayer.insertBefore(element,displayer.firstChild);
+    }else{
+        displayer.appendChild(element);
+    }
+    
+    let timer = setTimeout(function(){
+        if(!element.parentNode){
+            return;
+        }
+        element.parentNode.removeChild(element);
+    },duration*1000);
+
+}
     
 
 document.addEventListener('keydown',
