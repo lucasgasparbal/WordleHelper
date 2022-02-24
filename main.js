@@ -13021,6 +13021,14 @@ class LetterCountRegister{
         return true;
     }
 
+    isLetterBanned(letter){
+        if(!this.map.has(letter)){
+            return false;
+        }
+
+        return(this.map.get(letter) < 1);
+    }
+
 }
 
 
@@ -13041,6 +13049,13 @@ class ConfirmedLetter {
 
     isSameAs = function(confirmedLetterCondition){
         return(this.letter == confirmedLetterCondition.letter && this.position == confirmedLetterCondition.position);
+    }
+
+    checkConflictWithBannedLetters(letterCountRegistry){
+        if(letterCountRegistry.isLetterBanned(this.letter)){
+            let errorMessage = `The letter \"${this.letter.toUpperCase()}\"¿ is confirmed and banned in different words`;
+            throw new Error(errorMessage);
+        }
     }
 }
 
@@ -13105,6 +13120,17 @@ class PresentLetter {
         return newCondition;
     }
 
+    checkConflictWith(confirmedLetterCondition){
+        if(this.letter != confirmedLetterCondition.letter){
+            return;
+        }
+        for(let position of this.positions){
+            if(position == confirmedLetterCondition.position){
+                let errorMessage = `The letter \"${this.letter.toUpperCase()}\" has two different states on position ${position+1}`;
+                throw new Error(errorMessage);
+            }
+        }
+    }
 
         
 }
@@ -13405,40 +13431,93 @@ class TileGrid{
     evaluate = function(){
         console.log("vi von zulul");
 
-        let letterCountRegister = new LetterCountRegister();
+        let letterCountRegistry = new LetterCountRegister();
         let presentLetters = [];
         let confirmedLetters = [];
+        let rowLetterCounts = [];
         for(let i = 0; i < this.rowNumber; i++){
 
-            try{
-                let conditions = this.evaluateRow(this.tileGrid[i],letterCountRegister);
-            }catch(e){
-                createErrorPrompt(`Word ${i+1} is missing letters`,2);
+            let conditions = this.evaluateRow(this.tileGrid[i]);
+            if(conditions === null){ 
+                createErrorPrompt(`Word ${i+1} is missing letters`);
                 return;
+            }else if(!conditions){
+                continue;
             }
             
-            
+            presentLetters = presentLetters.concat(conditions[0]);
+            confirmedLetters = confirmedLetters.concat(conditions[1]);
+            rowLetterCounts.push(conditions[2]);
         }
 
-        presentLetters = joinPresentConditions(presentLetters);
+        for (let i= 0; i < rowLetterCounts.length-1;i++){
+            for(let j = i+1; j < rowLetterCounts.length; j++){
+                let rowLetterCount = rowLetterCounts[i][0];
+                let rowBannedLetters = rowLetterCounts[i][1];
+                let otherRowLetterCount = rowLetterCounts[j][0];
+                let otherRowBannedLetters = rowLetterCounts[j][1];
+                for( let letter of rowLetterCount.keys()){
+                    for(let otherLetter of otherRowLetterCount.keys()){
+                        let error = false;
+                        if(letter != otherLetter){
+                            continue;
+                        }
 
-        let validWords = createValidWords(presentLetters.concat(confirmedLetters),letterCountRegister);
+                        if(rowBannedLetters.includes(letter) && (otherRowLetterCount.get(letter) > rowLetterCount.get(letter))){
+                            error = true;
+                        }
+
+                        if(otherRowBannedLetters.includes(letter) && (rowLetterCount.get(letter) > otherRowLetterCount.get(letter))){
+                            error = true;
+                        }
+
+                        if(error){
+                            createErrorPrompt(`The letter \"${letter.toUpperCase()}\" has contradictory states in words ${i+1} and ${j+1}`);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        for(let letterCountsAndBannedLetters of rowLetterCounts ){
+            for( let key of letterCountsAndBannedLetters[0].keys()){
+                letterCountRegistry.setLetterCount(key,letterCountsAndBannedLetters[0].get(key));
+            }
+            for(let bannedLetter of letterCountsAndBannedLetters[1]){
+                letterCountRegistry.setMax(bannedLetter);
+            }
+        }
+        
+
+        
+        presentLetters = joinPresentConditions(presentLetters);
+        confirmedLetters = joinRepeatedConditions(confirmedLetters);
+        
+        try{
+            for(let presentLetter of presentLetters){
+                for(let confirmedLetter of confirmedLetters){
+                    presentLetter.checkConflictWith(confirmedLetter);
+                }
+            }
+        }catch(e){
+            createErrorPrompt(e.message);
+            console.log(e);
+            return;
+        }
+
+        
+
+        let validWords = createValidWords(presentLetters.concat(confirmedLetters),letterCountRegistry);
         console.log(validWords);
 
         resultPrompter.showWord(validWords);
 
-        function filterConditions( conditionsToBeFiltered, conditions){
-            let filteredConditions = []
-            for(let conditionToEvaluate of conditionsToBeFiltered){
-                let conditionRepeated = false;
-                for(let condition of conditions){
-                    if(condition.isSameAs(conditionToEvaluate)){
-                        conditionRepeated = true;
-                        break;
-                    }
-                }
-                if(!conditionRepeated){
-                    filteredConditions.push(conditionToEvaluate);
+        function joinRepeatedConditions(conditions){
+            let filteredConditions = [];
+            for(let condition of conditions){
+                if(!filteredConditions.includes(condition)){
+                    filteredConditions.push(condition);
                 }
             }
             return filteredConditions;
@@ -13466,7 +13545,7 @@ class TileGrid{
     }
 
 
-    evaluateRow = function(row, letterCountRegister){
+    evaluateRow = function(row){
         let presentLetters = [];
         let confirmedLetters = [];
         let bannedLetters = [];
@@ -13476,7 +13555,7 @@ class TileGrid{
             let letter = row[i].getLetter().trim().toLowerCase();
             if(!letter){
                 if(i > 0){
-                    throw new Error();
+                    return null;
                 }
                 return;
             }
@@ -13490,14 +13569,11 @@ class TileGrid{
             let bannedLetter = row[i].createBannedLetter();
             this.addConditionToArray(bannedLetter, bannedLetters);
         }
-        for(let key of countMap.keys()){
-            letterCountRegister.setLetterCount(key,countMap.get(key));
-        }
-        for(let letter of bannedLetters){
-            letterCountRegister.setMax(letter);
-        }
 
-        return[presentLetters,confirmedLetters];
+        let rowLetterCountRegistry = [countMap,bannedLetters]
+
+        let results = [presentLetters,confirmedLetters,rowLetterCountRegistry];
+        return results;
 
     }   
 
@@ -13724,13 +13800,14 @@ function addElementsToParent(elements,parent){
 }
 
 
-function createErrorPrompt(message,duration){
+function createErrorPrompt(message){
+    const DURATION = 3.5;
     let element = document.createElement("div");
     element.setAttribute("class","error-popup");
     element.textContent = "ERROR: "+message;
     let displayer = document.getElementById("error-displayer");
 
-    if(displayer.childNodes.length >= 10){
+    if(displayer.childNodes.length >= 5){
         displayer.removeChild(displayer.lastChild);
     }
 
@@ -13745,7 +13822,7 @@ function createErrorPrompt(message,duration){
             return;
         }
         element.parentNode.removeChild(element);
-    },duration*1000);
+    }, DURATION*1000);
 
 }
     
