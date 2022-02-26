@@ -12973,7 +12973,7 @@ const words = ['aahed',
 
 'zymic'];
 
-class LetterCountRegister{
+class LetterCountRegistry{
     constructor(){
         this.map = new Map();
         this.lettersWithMaxCount = [];
@@ -13021,14 +13021,33 @@ class LetterCountRegister{
         return true;
     }
 
-    isLetterBanned(letter){
-        if(!this.map.has(letter)){
-            return false;
+    checkConfirmedLetterCount = function(confirmedLetters){
+        
+        for(let letter of this.lettersWithMaxCount){
+            let validConfirmedLetters = [];
+            for(let confirmedLetter of confirmedLetters){
+                if(confirmedLetter.letter != letter){
+                    continue;
+                }
+
+                let isValid = true;
+                for( let validConfirmedLetter of validConfirmedLetters){
+                    if(validConfirmedLetter.isSameAs(confirmedLetter)){
+                        isValid = false;
+                    }
+                }
+
+                if(isValid){
+                    validConfirmedLetters.push(confirmedLetter);
+                }
+                
+            }
+            if(validConfirmedLetters.length > this.map.get(letter)){
+                let errorMessage = `The letter \"${letter.toUpperCase()}\" is confirmed in more tiles than it should`;
+                throw new Error(errorMessage);
+            }
         }
-
-        return(this.map.get(letter) < 1);
     }
-
 }
 
 
@@ -13049,13 +13068,6 @@ class ConfirmedLetter {
 
     isSameAs = function(confirmedLetterCondition){
         return(this.letter == confirmedLetterCondition.letter && this.position == confirmedLetterCondition.position);
-    }
-
-    checkConflictWithBannedLetters(letterCountRegistry){
-        if(letterCountRegistry.isLetterBanned(this.letter)){
-            let errorMessage = `The letter \"${this.letter.toUpperCase()}\"¿ is confirmed and banned in different words`;
-            throw new Error(errorMessage);
-        }
     }
 }
 
@@ -13170,7 +13182,7 @@ function wordIsValid(word, conditions, letterCountRegister){
 
 
 
-let testRegister = new LetterCountRegister();
+let testRegister = new LetterCountRegistry();
 letters = ["a","u","d", "s", "y","p"];
 testRegister.setLetterCount("p",2);
 for(let letter of letters ){
@@ -13431,7 +13443,7 @@ class TileGrid{
     evaluate = function(){
         console.log("vi von zulul");
 
-        let letterCountRegistry = new LetterCountRegister();
+        let letterCountRegistry = new LetterCountRegistry();
         let presentLetters = [];
         let confirmedLetters = [];
         let rowLetterCounts = [];
@@ -13500,14 +13512,14 @@ class TileGrid{
                     presentLetter.checkConflictWith(confirmedLetter);
                 }
             }
+
+            letterCountRegistry.checkConfirmedLetterCount(confirmedLetters);
         }catch(e){
             createErrorPrompt(e.message);
             console.log(e);
             return;
         }
-
         
-
         let validWords = createValidWords(presentLetters.concat(confirmedLetters),letterCountRegistry);
         console.log(validWords);
 
