@@ -1,6 +1,6 @@
 html{
     height: 100%;
-    font-size: 1.6vh;
+    font-size: 1.52vh;
 }
 
 
@@ -39,14 +39,14 @@ body{
     grid-template-columns: repeat(5, 1fr);
     justify-content: center;
     align-items: center;
-    grid-gap: 5px;
+    grid-gap: 8px;
 }
 
 .tile{
     width: 100%;
     display: grid;
     grid-template-rows: 2fr 3fr;
-    grid-gap: 0.2rem;
+    grid-gap: 5px;
     justify-content: center;
     align-items: center;
     box-sizing: content-box;
@@ -120,6 +120,15 @@ header{
     font-size: 4rem;
     border-bottom: inset 2px rgba(128, 128, 128, 0.459);
     user-select: none;
+    overflow-wrap: unset;
+}
+
+#help-button{
+    cursor:pointer;
+}
+
+#help-button:hover{
+    stroke-width: 1.5;
 }
 
 #popup{
@@ -139,12 +148,7 @@ header{
     padding-bottom: 3rem;
 }
 
-@media screen  and (min-width: 810px){
-    #popup{
-        max-width: 480px;
-        min-width: 480px;
-    }
-}
+
 
 #overlay{
     display: none;
@@ -179,7 +183,7 @@ header{
     text-align: justify;
     min-height: 70%;
     max-height: 70%;
-    font-size: 1.1rem;
+    font-size: 16px;
     padding-inline-end: 1rem;
     margin-block-end: 0;
     overflow:auto;
@@ -227,6 +231,8 @@ header{
     pointer-events: none;
     transform: translate(-50%,0);
     z-index: 1000;
+    overflow: hidden;
+    max-block-size: 80%;
 }
 
 .error-popup{
@@ -235,7 +241,27 @@ header{
     user-select: none;
     pointer-events: none;
     font-weight:bold;
+    font-size: 16px ;
     padding: 0.5rem;
     margin:1rem;
     border-radius: 5px;
+}
+
+@media screen  and (min-width: 810px){
+    #popup{
+        max-width: 480px;
+        min-width: 480px;
+    }
+
+    html{
+        font-size: 1.6vh;
+        font-weight: 500;
+    }
+    .error-popup{
+        font-size: 1.1rem;
+    }
+
+    #word-meaning{
+        font-size: 1.1rem;
+    }
 }
