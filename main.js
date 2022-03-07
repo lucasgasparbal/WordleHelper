@@ -13677,10 +13677,12 @@ class ResultPrompter{
         
         let otherWordButton = document.createElement("button");
         otherWordButton.setAttribute("onclick","resultPrompter.showAnotherWord()");
+        otherWordButton.setAttribute("class","menu-button");
         otherWordButton.textContent = "get another word";
 
         let tryAgainButton = document.createElement("button");
         tryAgainButton.setAttribute("onclick","resetPopup()");
+        tryAgainButton.setAttribute("class","menu-button");
         tryAgainButton.textContent = "go back";
 
         addElementsToParent([prevButton,textWrap,nextButton],meaningWrap);
@@ -13839,6 +13841,61 @@ function createErrorPrompt(message){
 }
     
 
+function resetPopup(){
+    popup = document.getElementById("popup");
+
+    while (popup.firstChild) {
+        popup.removeChild(popup.firstChild);
+      }
+    document.getElementById("overlay").style.display = "none";
+    
+}
+
+function setUpKeyboard(){
+    let firstRow = ["q","w","e","r","t","y","u","i","o","p"];
+    let secondRow = ["a","s","d","f","g","h","j","k","l"];
+    let thirdRow = ["Enter","z","x","c","v","b","n","m","Backspace"];
+    let container = document.getElementById("keyboard-wrap");
+    for(let row of [firstRow,secondRow,thirdRow]){
+        let rowElement = document.createElement("div");
+        rowElement.setAttribute("class","keyboard-row");
+        container.appendChild(rowElement);
+        if(row == secondRow){
+            let spacer = document.createElement("div");
+            spacer.setAttribute("class","spacer");
+            rowElement.appendChild(spacer);
+        }
+        for(let key of row){
+            let func = "";
+            let elementClass = "";
+            if(key == "Enter"){
+                func = "tileGrid.moveCursorFromCurrentRow(1)";
+                elementClass = "spaced ";
+            }else if(key == "Backspace"){
+                func = "tileGrid.deleteCurrentLetter()";
+                elementClass = "spaced ";
+                key = "←";
+            }else{
+                func = `pressKey(this)`;
+            }
+            let keyElement = document.createElement("button");
+            keyElement.setAttribute("class",elementClass+"key");
+            keyElement.textContent = key;
+            keyElement.setAttribute("onclick",func);
+            rowElement.appendChild(keyElement);
+        }
+        if(row == secondRow){
+            let spacer = document.createElement("div");
+            spacer.setAttribute("class","spacer");
+            rowElement.appendChild(spacer);
+        }
+    }
+}
+
+function pressKey(keyElement){
+    tileGrid.writeLetter(keyElement.textContent);
+}
+
 document.addEventListener('keydown',
 (event) =>{
 
@@ -13858,24 +13915,13 @@ document.addEventListener('keydown',
     
 })
 
-function resetPopup(){
-    popup = document.getElementById("popup");
-
-    while (popup.firstChild) {
-        popup.removeChild(popup.firstChild);
-      }
-    document.getElementById("overlay").style.display = "none";
-    
-}
-
-
 
 let tileGrid = null;
 let resultPrompter = new ResultPrompter();
 
 window.onload = function(){
     tileGrid = new TileGrid();
-    
+    setUpKeyboard()
 }
 
 document.getElementById("overlay").addEventListener('click',(event)=>{
@@ -13893,3 +13939,5 @@ document.getElementById("overlay").addEventListener('click',(event)=>{
         resetPopup();
     }
 })
+
+
