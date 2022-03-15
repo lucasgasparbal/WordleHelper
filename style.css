@@ -83,8 +83,8 @@ body{
     min-height: 25px;
     box-sizing: border-box;
     user-select: none;
-    border: 1px solid gray;
-
+    border: 2px solid gray;
+    border-radius: 4px;
 }
 
 .color-button:hover{

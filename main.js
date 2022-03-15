@@ -13261,11 +13261,7 @@ class Tile {
         this.letter.textContent = tile.letter.textContent;
         tile.letter.textContent = aux;
     }
-
-    scrollIntoView = function(){
-        this.colorButton.scrollIntoView({behavior: "smooth", block: "center",inline: "nearest"});
-    }
-
+    
     createBannedLetter = function(){
         if(this.state != Tile.STATES["banned"]){
             return null;
@@ -13359,7 +13355,11 @@ class TileGrid{
             return;            
         }else{
             tile.writeLetter(letter);
-            this.moveCursorFromCurrentPoint(0,1);
+            if(this.cursorX < this.tileNumber-1 ){
+                this.moveCursorFromCurrentPoint(0,1);
+            }else if(this.cursorY < this.rowNumber-1){
+                this.moveCursorFromCurrentPoint(1,-4);
+            }
         }
         
         
@@ -13418,14 +13418,18 @@ class TileGrid{
         
         currentTile = this.tileGrid[this.cursorY][this.cursorX];
         currentTile.select();
-        currentTile.scrollIntoView();
     }
 
     deleteCurrentLetter = function(){
 
         let tile = this.tileGrid[this.cursorY][this.cursorX];
         if(tile.isEmpty()){
-            this.moveCursorFromCurrentPoint(0,-1);
+            if(this.cursorX > 0){
+                this.moveCursorFromCurrentPoint(0,-1);    
+            }else if(this.cursorY > 0){
+                this.moveCursorFromCurrentPoint(-1,4)
+            }
+            
             
         }
         this.tileGrid[this.cursorY][this.cursorX].deleteLetter();
