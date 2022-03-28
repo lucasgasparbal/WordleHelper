@@ -13619,8 +13619,6 @@ class TileGrid{
 class ResultPrompter{
 
     constructor(){
-        this.overlay = document.getElementById("overlay");
-        this.popup = document.getElementById("popup");
         this.latestResults = [];
         this.lastPickedWord = "";
         this.lastPickedWordMeanings = [];
@@ -13635,12 +13633,12 @@ class ResultPrompter{
         meaningWrap.setAttribute("id","meaning-wrap");
 
         let prevButton = document.createElement("button");
-        prevButton.setAttribute("class","meaning-button");
+        prevButton.setAttribute("class","menu-button meaning-button");
         prevButton.setAttribute("onclick","resultPrompter.showPreviousMeaning()")
         prevButton.textContent = "<";
 
         let nextButton = document.createElement("button");
-        nextButton.setAttribute("class","meaning-button");
+        nextButton.setAttribute("class","menu-button meaning-button");
         nextButton.setAttribute("onclick","resultPrompter.showNextMeaning()")
         nextButton.textContent = ">";
 
@@ -13691,7 +13689,7 @@ class ResultPrompter{
 
         addElementsToParent([prevButton,textWrap,nextButton],meaningWrap);
         addElementsToParent([this.partOfSpeech,this.wordMeaning,this.dictionaryCredit],textWrap);
-        addElementsToParent([otherWordButton,tryAgainButton],buttonHolder);
+        addElementsToParent([otherWordButton, tryAgainButton],buttonHolder);
 
         this.popupElements = [header,this.wordRecipient,meaningWrap,buttonHolder];
 
@@ -13700,14 +13698,12 @@ class ResultPrompter{
 
     showWord(words){
         this.latestResults = words;
-
-        addElementsToParent(this.popupElements,this.popup);
         
         this.lastPickedWord = this.pickRandomWord(this.latestResults);
         
         this.wordRecipient.textContent = this.lastPickedWord;
         this.showDictionaryDefinition(this.lastPickedWord);
-        this.overlay.style.display = "flex";
+        showPopup(this.popupElements);
     }
 
     pickRandomWord = function(words){
@@ -13810,6 +13806,42 @@ class ResultPrompter{
     }
 }
 
+class HelpPrompter{
+ constructor(goBackButton){
+     let title = document.createElement("h2");
+     title.textContent = "Instructions";
+    this.goBackButton = goBackButton;
+    let instructions = [];
+    for(let i = 0; i < 3; i++){
+        instructions[i] = document.createElement("h4");
+    }
+
+    instructions[0].textContent = "1. Write words on the rows using the keyboard. You can select a row by pressing any of its tiles."
+
+    instructions[1].textContent = "2. Press the button above a letter to rotate the letter's state. The default state is Absent.";
+    instructions[2].textContent = "3. Once the grid matches your guesses, press submit to receive your word!";
+
+    let imgWrap = document.createElement("div");
+    imgWrap.setAttribute("id","help-image-wrap");
+
+    let firstImg = document.createElement("img");
+    firstImg.setAttribute("src","img/colorbutton-help-press.png");
+    firstImg.setAttribute("alt","the button to change a letter's state is above the letter");
+    imgWrap.appendChild(firstImg);
+
+    let secondImg = document.createElement("img");
+    secondImg.setAttribute("src","img/colorbutton-help-yellow.png");
+    secondImg.setAttribute("alt","the letter rotates state with each press of the button");
+    imgWrap.appendChild(secondImg);
+
+
+    this.popupElements = [title,instructions[0],instructions[1],imgWrap,instructions[2],this.goBackButton];
+ }
+
+    showHelp(){
+        showPopup(this.popupElements);
+    }
+}
 function addElementsToParent(elements,parent){
     for(let element of elements){
         parent.appendChild(element);
@@ -13844,14 +13876,22 @@ function createErrorPrompt(message){
 
 }
     
+function showPopup(elements){
+    let overlay = document.getElementById("overlay");
+    let popup = document.getElementById("popup");
+    addElementsToParent(elements,popup);
+    overlay.style.display = "flex";
+    document.body.style.overflow = "hidden";
+}
 
 function resetPopup(){
-    popup = document.getElementById("popup");
+    let popup = document.getElementById("popup");
 
     while (popup.firstChild) {
         popup.removeChild(popup.firstChild);
       }
     document.getElementById("overlay").style.display = "none";
+    document.body.style.overflow = "auto";
     
 }
 
@@ -13921,10 +13961,17 @@ document.addEventListener('keydown',
 
 
 let tileGrid = null;
-let resultPrompter = new ResultPrompter();
+let resultPrompter = null;
+let helpPrompter = null;
 
 window.onload = function(){
     tileGrid = new TileGrid();
+    let tryAgainButton = document.createElement("button");
+    tryAgainButton.setAttribute("onclick","resetPopup()");
+    tryAgainButton.setAttribute("class","menu-button");
+    tryAgainButton.textContent = "go back";
+    resultPrompter = new ResultPrompter();
+    helpPrompter = new HelpPrompter(tryAgainButton);
     setUpKeyboard()
 }
 
