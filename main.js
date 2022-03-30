@@ -13178,33 +13178,6 @@ function wordIsValid(word, conditions, letterCountRegister){
 
 }
 
-
-
-
-
-let testRegister = new LetterCountRegistry();
-letters = ["a","u","d", "s", "y","p"];
-testRegister.setLetterCount("p",2);
-for(let letter of letters ){
-    testRegister.setMax(letter);
-}
-
-
-
-const confirmedLetterTest = new ConfirmedLetter("p",
-3);
-
-const presentLetterTest = new PresentLetter("p",
-[0,
-4]);
-
-
-
-function wordleTest(){
-    console.log(createValidWords([confirmedLetterTest, presentLetterTest],testRegister));
-}
-
-
 class Tile {
 
     static STATES = {
@@ -13215,9 +13188,9 @@ class Tile {
     constructor(colorButton,letter, number){
         this.colorButton = colorButton;
         this.letter = letter;
-        this.states = ["#3a3a3c",
-        "#b59f3b",
-        "#538d4e"];
+        this.states = ["var(--absent-letter-color)",
+        "var(--present-letter-color)",
+        "var(--confirmed-letter-color)"];
         this.state = -1;
         this.rotateColor();
         this.number = number;
@@ -13445,7 +13418,6 @@ class TileGrid{
     }
 
     evaluate = function(){
-        console.log("vi von zulul");
 
         let letterCountRegistry = new LetterCountRegistry();
         let presentLetters = [];
@@ -13525,7 +13497,6 @@ class TileGrid{
         }
         
         let validWords = createValidWords(presentLetters.concat(confirmedLetters),letterCountRegistry);
-        console.log(validWords);
 
         resultPrompter.showWord(validWords);
 
@@ -13769,7 +13740,6 @@ class ResultPrompter{
             }
             for(let meaning of word.meanings){
                 for(let definition of meaning.definitions){
-                    console.log(meaning.partOfSpeech+definition.definition);
                     meanings.push([pluralText + meaning.partOfSpeech, definition.definition]);
                     
                 }
@@ -13895,6 +13865,19 @@ function resetPopup(){
     
 }
 
+let highContrast = false;
+function changeColorScheme(){
+    highContrast = !highContrast;
+    let docStyle = getComputedStyle(document.body);
+    if(highContrast){
+        document.body.style.setProperty("--confirmed-letter-color",docStyle.getPropertyValue("--orange"));
+        document.body.style.setProperty("--present-letter-color",docStyle.getPropertyValue("--blue"));
+    }else{
+        document.body.style.setProperty("--confirmed-letter-color",docStyle.getPropertyValue("--green"));
+        document.body.style.setProperty("--present-letter-color",docStyle.getPropertyValue("--yellow"));
+    }
+}
+
 function setUpKeyboard(){
     let firstRow = ["q","w","e","r","t","y","u","i","o","p"];
     let secondRow = ["a","s","d","f","g","h","j","k","l"];
@@ -13944,7 +13927,6 @@ document.addEventListener('keydown',
 (event) =>{
 
     if(event.key.match("[a-zA-Z]{1}") == event.key){
-        console.log(event.key.match("[a-zA-Z]{1}"));
         tileGrid.writeLetter(event.key);
     }else if(event.key == "Backspace"){
         tileGrid.deleteCurrentLetter();

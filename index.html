@@ -12,25 +12,28 @@
   <div id="error-displayer">
   </div>
   <div class="wrap">
-    <header >WordleHelper
-      <svg width="32" height="32" viewBox="0 0 48 48" id="help-button"xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" onclick="helpPrompter.showHelp()">
-       <circle
-          style="fill:none;fill-rule:evenodd;stroke-width:3"
-          stroke="currentColor";
-          cx="24"
-          cy="24"
-          r="22.5" />
-       <text
-          xml:space="preserve"
-          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.4183px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ececec;fill-opacity:1;stroke:#ececec;stroke-width:1"
-          x="12.5"
-          y="37.5"
-          transform="scale(1.0451569,0.95679413)"><tspan
-            x="12.5"
-            y="37.5"
-            stroke="currentColor";>?</tspan></text>
-   </svg>
-   
+    <header >
+    <h1>WordleHelper</h1>
+    <div id="menu-grid">
+      <svg width="32" height="32" viewBox="0 0 48 48" id="help-button"xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" onclick="helpPrompter.showHelp()" title="Instructions">
+        <circle
+           style="fill:none;fill-rule:evenodd;stroke-width:3"
+           stroke="currentColor";
+           cx="24"
+           cy="24"
+           r="22.5" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.4183px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ececec;fill-opacity:1;stroke:#ececec;stroke-width:1"
+           x="12.5"
+           y="37.5"
+           transform="scale(1.0451569,0.95679413)"><tspan
+             x="12.5"
+             y="37.5"
+             stroke="currentColor";>?</tspan></text>
+     </svg>
+     <svg title="Change color scheme" id="color-switch-button" onclick="changeColorScheme()" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 8.467 8.467" stroke="gray" stroke-linejoin="round" xmlns:v="https://vecta.io/nano"><rect id="present-color-rect" width="7.938" height="3.704" x=".265" y=".265" ry=".529" fill="var(--present-letter-color)" stroke-width=".265" paint-order="markers fill stroke"/><rect id="confirmed-color-rect" width="7.928" height="3.695" x=".265" y="4.498" ry=".853" fill="var(--confirmed-letter-color)" stroke-width=".274" paint-order="markers fill stroke"/></svg>  
+    </div>
     </header>
     <div id="board-wrap">
       <div class="gamebox"></div>

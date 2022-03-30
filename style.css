@@ -1,8 +1,23 @@
+:root{
+    --absent-letter-color: #3a3a3c;
+    --green: #538d4e;
+    --yellow: #b59f3b;
+    --orange: #f5793a;
+    --blue: #85c0f9;
+    --confirmed-letter-color:var(--green);
+    --present-letter-color: var(--yellow);
+}
+
+
 html{
     height: 100%;
     font-size: 1.52vh;
 }
 
+h1{
+    font-size: 3rem;
+    margin:0 3px;
+}
 
 body{
     line-height: 1.6;
@@ -60,11 +75,7 @@ body{
 }
 
 .tile-letter{
-    width: 100%;
-    min-width: 3rem;
-    min-height: 3rem;
-    max-width: 3rem;
-    max-height: 3rem;
+    width: 3rem;
     text-align: center;
     font-size: 1.75rem;
     line-height: 2rem;
@@ -74,7 +85,7 @@ body{
     user-select: none;
     padding: 0.5rem;
     cursor:text;
-    overflow: hidden;
+    height: 3rem;
 }
 
 .tile-letter[selected="true"]{
@@ -98,7 +109,6 @@ body{
 
 .menu-button{
     display: inline-block;
-    flex-wrap: wrap;
     flex:auto;
     background-color: #121213;
     border: 2px solid gray;
@@ -118,7 +128,6 @@ body{
 
 .button-holder{
     align-self: center;
-    align-items: center;
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
@@ -127,21 +136,24 @@ body{
 }
 
 header{
-    font-size: 4rem;
     border-bottom: inset 2px rgba(128, 128, 128, 0.459);
     user-select: none;
     overflow-wrap: unset;
     width: 100%;
-    text-align: center;
+    display:flex;
+    align-items: center;
 }
 
 #help-button{
     cursor:pointer;
+    flex: 1 1 32px
 }
 
-#help-button:hover{
-    stroke-width: 1.5;
+#color-switch-button{
+    cursor:pointer;
+    flex: 1 1 32px;
 }
+
 
 #popup{
     display:flex;
@@ -151,7 +163,6 @@ header{
     border: 2px inset gray;
     padding: 1rem;
     background-color:#121213;
-    align-items: flex-start;
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: center;
@@ -172,7 +183,6 @@ header{
     top: 0;
     left: 0;
     justify-content: center;
-    align-items: start;
     background-color: rgba(0, 0, 0, 0.459);
     z-index: 200;
     min-height: 720px;
@@ -262,55 +272,11 @@ header{
     width: fit-content;
 }
 
-@media screen  and (min-width: 810px){
-    #popup{
-        max-width: 480px;
-        min-width: 480px;
-        height: 60%;
-    }
-
-    .wrap{
-        max-width: 480px;
-    }
-
-    html{
-        font-size: 1.6vh;
-        font-weight: 500;
-    }
-    .error-popup{
-        font-size: 1.1rem;
-    }
-
-    #word-meaning{
-        font-size: 1.1rem;
-    }
-
-    #part-of-speech{
-        font-size:1rem;
-    }
-
-    #dict-credit{
-        font-size: 0.7rem;
-    }
-
-    h2{
-        font-size: 1.4rem;
-    }
-
-    h4{
-        font-size: default;
-    }
-    
-    #error-displayer{
-        width: 30%;
-    }
-}
-
 #board-wrap{
     display: grid;
     grid-template-columns: 9fr 1fr;
     margin: 1rem;
-    
+    flex-grow: 1;
 }
 
 .keyboard-row{
@@ -365,14 +331,12 @@ h2{
 }
 
 h4{
-   align-self: inline-start;
    font-size: 16px;
 }
 
 #help-image-wrap{
     display: grid;
     width: 100%;
-    height: 20%;
     grid-template-columns: 1fr 1fr;
     gap: 20%;
 }
@@ -380,4 +344,61 @@ h4{
 img{
     /*! margin: 1rem; */
     width: 100%;
+}
+
+#menu-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-left: 0.5rem;
+    justify-items: center;
+    flex: 1;
+}
+
+@media screen  and (min-width: 810px){
+    #popup{
+        max-width: 480px;
+        min-width: 480px;
+        height: 60%;
+    }
+
+    .wrap{
+        max-width: 480px;
+    }
+
+    html{
+        font-size: 1.6vh;
+        font-weight: 500;
+    }
+    .error-popup{
+        font-size: 1.1rem;
+    }
+
+    #word-meaning{
+        font-size: 1.1rem;
+    }
+
+    #part-of-speech{
+        font-size:1rem;
+    }
+
+    #dict-credit{
+        font-size: 0.7rem;
+    }
+
+    h1{
+        font-size: 4rem;
+    }
+
+    h2{
+        font-size: 1.4rem;
+    }
+
+    h4{
+        font-size:initial;
+    }
+    
+    #error-displayer{
+        width: 30%;
+    }
 }
