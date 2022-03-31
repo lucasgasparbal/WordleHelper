@@ -402,3 +402,18 @@ img{
         width: 30%;
     }
 }
+
+footer{
+    display: flex;
+    flex-wrap: nowrap;
+    font-size: 12px;
+    flex-direction: row;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 1rem;
+    border-top: inset 2px rgba(128, 128, 128, 0.459);
+}
+
+#github-link{
+    flex: 1 1 auto;
+}
