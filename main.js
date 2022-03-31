@@ -8,7 +8,7 @@ class LetterCountRegistry{
         this.lettersWithMaxCount = [];
     }
 
-    setLetterCount = function(letter, count){
+    setLetterCount(letter, count){
         let key = letter.trim().toLowerCase();
         if(this.map.has(key) && (this.map.get(key) >= count)){
             return;
@@ -16,7 +16,7 @@ class LetterCountRegistry{
         this.map.set(key,count);
     }
 
-    setMax = function(letter){
+    setMax(letter){
         let key = letter.trim().toLowerCase();
         if(!this.lettersWithMaxCount.includes(key)){
             if(!this.map.has(key)){
@@ -26,7 +26,7 @@ class LetterCountRegistry{
         }
     }
 
-    wordIsValid = function(word){
+    wordIsValid(word){
         for(let key of this.map.keys()){
             let wordLetterCount = 0;
             let correctCount = this.map.get(key);
@@ -50,7 +50,7 @@ class LetterCountRegistry{
         return true;
     }
 
-    checkConfirmedLetterCount = function(confirmedLetters){
+    checkConfirmedLetterCount(confirmedLetters){
         
         for(let letter of this.lettersWithMaxCount){
             let validConfirmedLetters = [];
@@ -87,7 +87,7 @@ class ConfirmedLetter {
         
     }
 
-    validateWord = function (word) {
+    validateWord (word) {
         if(!word){
             return true;
         }
@@ -95,7 +95,7 @@ class ConfirmedLetter {
         return (wordLower.charAt(this.position) === this.letter);
     };
 
-    isSameAs = function(confirmedLetterCondition){
+    isSameAs(confirmedLetterCondition){
         return(this.letter == confirmedLetterCondition.letter && this.position == confirmedLetterCondition.position);
     }
 }
@@ -107,7 +107,7 @@ class PresentLetter {
         this.positions = positions;    
     }
 
-    validateWord = function (word) {
+    validateWord (word) {
         if(!word){
             return true;
         }
@@ -120,7 +120,7 @@ class PresentLetter {
         return true;
     };
 
-    isSameAs = function(presentLetterCondition){
+    isSameAs(presentLetterCondition){
         if(!(this.letter == presentLetterCondition.letter)){
             return false;
         }
@@ -221,7 +221,7 @@ class Tile {
 
     }
 
-    rotateColor = function(){
+    rotateColor(){
         this.state += 1;
         if(this.state >= this.states.length){
             this.state = Tile.STATES["banned"];
@@ -229,44 +229,44 @@ class Tile {
         this.setColor();
     }
 
-    setColor = function(){
+    setColor(){
         this.colorButton.style.backgroundColor = this.states[this.state];
         this.letter.style.backgroundColor = this.states[this.state];
     }
-    writeLetter = function(letter){
+    writeLetter(letter){
         this.letter.textContent = letter;
     }
 
-    deleteLetter = function(){
+    deleteLetter(){
         this.letter.textContent = "";
     }
 
-    isEmpty = function(){
+    isEmpty(){
         return (!this.letter.textContent);
     }
 
-    select = function(){
+    select(){
         this.letter.setAttribute("selected","true");
     }
 
-    deselect = function(){
+    deselect(){
         this.letter.setAttribute("selected","false");
     }
 
-    swapLetter = function(tile){
+    swapLetter(tile){
         let aux = this.letter.textContent;
         this.letter.textContent = tile.letter.textContent;
         tile.letter.textContent = aux;
     }
     
-    createBannedLetter = function(){
+    createBannedLetter(){
         if(this.state != Tile.STATES["banned"]){
             return null;
         }
         return this.letter.textContent;
     }
 
-    createPresentLetterCondition = function(){
+    createPresentLetterCondition(){
         if(this.state != Tile.STATES["present"]){
             return null;
         }
@@ -274,7 +274,7 @@ class Tile {
         return condition;
     }
 
-    createConfirmedLetterCondition = function(){
+    createConfirmedLetterCondition(){
         if(this.state != Tile.STATES["confirmed"]){
             return null;
         }
@@ -282,7 +282,7 @@ class Tile {
         return condition;
     }
 
-    clear = function(){
+    clear(){
         this.deleteLetter();
         this.state = Tile.STATES["banned"];
         this.setColor();
@@ -326,25 +326,25 @@ class TileGrid{
         this.moveCursorTo(0,0);
     }
 
-    setupColorButton = function(){
+    setupColorButton(){
         let colorButton = document.createElement("div");
         colorButton.className = "color-button";
         colorButton.setAttribute("onclick",     "tileGrid.changeColor(this)");
         return colorButton;
     }
 
-    parseId = function(string){
+    parseId(string){
         let coordinates  = string.split(",");
         let y = parseInt(coordinates[0]);
         let x = parseInt(coordinates[1]);
         return [y,x]; 
     }
-    changeColor = function(element){
+    changeColor(element){
         let coordinates = this.parseId(element.parentNode.getAttribute("id"));
         this.tileGrid[coordinates[0]][coordinates[1]].rotateColor();
     }
 
-    writeLetter = function(letter){
+    writeLetter(letter){
         let tile = this.tileGrid[this.cursorY][this.cursorX];
         if(!tile.isEmpty()){
             return;            
@@ -360,7 +360,7 @@ class TileGrid{
         
     }
 
-    rowHasLettersAfter = function(rowNumber, tileNumber){
+    rowHasLettersAfter(rowNumber, tileNumber){
         for(let i = tileNumber+1; i <this.tileNumber; i++){
             if(!this.tileGrid[rowNumber][i].isEmpty()){
                 return true;
@@ -369,7 +369,7 @@ class TileGrid{
         return false;
     }
 
-    moveCursorFromCurrentPoint = function(yOffset,xOffset){
+    moveCursorFromCurrentPoint(yOffset,xOffset){
         let x = this.cursorX + xOffset;
         let y = this.cursorY + yOffset;
         if(x < 0 || x >= this.tileNumber || y < 0 || y >= this.rowNumber){
@@ -378,12 +378,12 @@ class TileGrid{
         this.moveCursorTo(y,x);
     }
 
-    moveCursorToTile = function(element){
+    moveCursorToTile(element){
         let coordinates = this.parseId(element.parentNode.getAttribute("id"));
         this.moveCursorToCorrespondingTile(coordinates[0]);
     }
 
-    moveCursorToCorrespondingTile = function(rowNumber){
+    moveCursorToCorrespondingTile(rowNumber){
         let y = rowNumber;
         let x = this.tileNumber-1;
         if(x < 0 || x >= this.tileNumber || y < 0 || y >= this.rowNumber){
@@ -402,7 +402,7 @@ class TileGrid{
 
     }
 
-    moveCursorTo = function(y,x){
+    moveCursorTo(y,x){
         
         let currentTile = this.tileGrid[this.cursorY][this.cursorX];
         currentTile.deselect();
@@ -415,7 +415,7 @@ class TileGrid{
         currentTile.select();
     }
 
-    deleteCurrentLetter = function(){
+    deleteCurrentLetter(){
 
         let tile = this.tileGrid[this.cursorY][this.cursorX];
         if(tile.isEmpty()){
@@ -431,7 +431,7 @@ class TileGrid{
         
     }
 
-    getTileIdFromCursor = function(){
+    getTileIdFromCursor(){
         return this.cursorY.toString() + "," + this.cursorX.toString();
     }
 
@@ -439,7 +439,7 @@ class TileGrid{
         this.moveCursorToCorrespondingTile(this.cursorY + rowOffset);
     }
 
-    evaluate = function(){
+    evaluate(){
 
         let letterCountRegistry = new LetterCountRegistry();
         let presentLetters = [];
@@ -554,7 +554,7 @@ class TileGrid{
     }
 
 
-    evaluateRow = function(row){
+    evaluateRow(row){
         let presentLetters = [];
         let confirmedLetters = [];
         let bannedLetters = [];
@@ -586,7 +586,7 @@ class TileGrid{
 
     }   
 
-    addConditionToArray = function(condition, array, letter="", map = null){
+    addConditionToArray(condition, array, letter="", map = null){
         if(condition){
             array.push(condition);
             if(map){
@@ -597,7 +597,7 @@ class TileGrid{
         
     }
 
-    clearGrid = function(){
+    clearGrid(){
         if(confirm("Do you want to wipe the grid?")){
             for(let i = 0; i < this.rowNumber; i++){
                 for(let j = 0; j < this.tileNumber; j++){
@@ -702,12 +702,12 @@ class ResultPrompter{
         showPopup(this.popupElements);
     }
 
-    pickRandomWord = function(words){
+    pickRandomWord(words){
         var index = Math.floor(Math.random()*(words.length));
         return words[index];
     }
 
-    showAnotherWord = function(){
+    showAnotherWord(){
 
         if(this.latestResults.length < 2 ){
             return;
@@ -723,7 +723,7 @@ class ResultPrompter{
         this.showDictionaryDefinition(this.lastPickedWord);
     }
 
-    showDictionaryDefinition = function(word){
+    showDictionaryDefinition(word){
         let url = "https://api.dictionaryapi.dev/api/v2/entries/en/"+word;
         let resultPrompter = this;
         fetch(url).then(response => {
@@ -747,7 +747,7 @@ class ResultPrompter{
             }).catch(e => console.log(e));
     }
 
-    extractMeanings = function(dictData){
+    extractMeanings(dictData){
         let meanings = [];
         for( let word of dictData){
             if(!this.dictLicense.textContent){
@@ -775,7 +775,7 @@ class ResultPrompter{
         return meanings
     }
 
-    showNextMeaning = function(){
+    showNextMeaning(){
         let newIndex = this.meaningIndex + 1;
         if(newIndex >= this.lastPickedWordMeanings.length){
             newIndex = 0;
@@ -784,7 +784,7 @@ class ResultPrompter{
         this.showMeaning();
     }
 
-    showPreviousMeaning = function(){
+    showPreviousMeaning(){
         let newIndex = this.meaningIndex -1;
         if(newIndex < 0){
             newIndex = this.lastPickedWordMeanings.length - 1;
@@ -794,7 +794,7 @@ class ResultPrompter{
     }
 
 
-    showMeaning = function(){
+    showMeaning(){
         if(this.lastPickedWordMeanings.length < 1){
             return;
         }
